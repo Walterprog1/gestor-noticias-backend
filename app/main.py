@@ -88,18 +88,22 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Gestor de Noticias API...")
     settings = get_settings()
     logger.info(f"LLM Provider: {settings.LLM_PROVIDER}, Model: {settings.LLM_MODEL}")
-    init_db()
-    seed_database()
     
-    # Only start scheduler if not on Railway (APScheduler doesn't work well with container restarts)
-    if os.getenv("DISABLE_SCHEDULER", "false").lower() != "true":
-        start_scheduler()
-    else:
-        logger.info("Scheduler disabled (running on Railway or similar PaaS)")
+    try:
+        init_db()
+        seed_database()
+    except Exception as e:
+        logger.error(f"Database initialization failed: {e}")
+        raise
     
+    start_scheduler()
     yield
+    
     # Shutdown
-    stop_scheduler()
+    try:
+        stop_scheduler()
+    except Exception as e:
+        logger.error(f"Error during shutdown: {e}")
     logger.info("Gestor de Noticias API stopped.")
 
 

@@ -2,6 +2,7 @@
 Scheduler — Ejecuta escaneos automáticos a horarios configurados.
 """
 import logging
+import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
@@ -12,27 +13,37 @@ scheduler = BackgroundScheduler()
 
 def start_scheduler():
     """Start the background scheduler and load jobs from DB."""
+    if os.getenv("DISABLE_SCHEDULER", "false").lower() == "true":
+        logger.info("Scheduler disabled via DISABLE_SCHEDULER env var")
+        return
+    
     if scheduler.running:
         return
 
-    # Add a default job that runs every 6 hours to scan all active sources
-    scheduler.add_job(
-        scan_all_active_sources,
-        CronTrigger(hour="6,12,18,0"),
-        id="scan_all",
-        replace_existing=True,
-        name="Escaneo automático de todas las fuentes"
-    )
+    try:
+        # Add a default job that runs every 6 hours to scan all active sources
+        scheduler.add_job(
+            scan_all_active_sources,
+            CronTrigger(hour="6,12,18,0"),
+            id="scan_all",
+            replace_existing=True,
+            name="Escaneo automático de todas las fuentes"
+        )
 
-    scheduler.start()
-    logger.info("Scheduler started")
+        scheduler.start()
+        logger.info("Scheduler started")
+    except Exception as e:
+        logger.error(f"Failed to start scheduler: {e}")
 
 
 def stop_scheduler():
     """Stop the background scheduler."""
-    if scheduler.running:
-        scheduler.shutdown()
-        logger.info("Scheduler stopped")
+    try:
+        if scheduler.running:
+            scheduler.shutdown(wait=False)
+            logger.info("Scheduler stopped")
+    except Exception as e:
+        logger.error(f"Error stopping scheduler: {e}")
 
 
 def scan_all_active_sources():

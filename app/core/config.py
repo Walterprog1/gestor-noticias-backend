@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+import os
 
 
 class Settings(BaseSettings):
@@ -14,6 +15,9 @@ class Settings(BaseSettings):
     LLM_API_KEY: str = ""
     LLM_MODEL: str = "claude-3-5-sonnet-20241022"
     LLM_BASE_URL: str = ""
+
+    # Railway uses $PORT
+    PORT: int = 8000
 
     class Config:
         env_file = ".env"

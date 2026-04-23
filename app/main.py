@@ -90,7 +90,13 @@ async def lifespan(app: FastAPI):
     logger.info(f"LLM Provider: {settings.LLM_PROVIDER}, Model: {settings.LLM_MODEL}")
     init_db()
     seed_database()
-    start_scheduler()
+    
+    # Only start scheduler if not on Railway (APScheduler doesn't work well with container restarts)
+    if os.getenv("DISABLE_SCHEDULER", "false").lower() != "true":
+        start_scheduler()
+    else:
+        logger.info("Scheduler disabled (running on Railway or similar PaaS)")
+    
     yield
     # Shutdown
     stop_scheduler()
@@ -104,7 +110,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173").split(",")
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS", 
+    "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,https://*.vercel.app"
+).split(",")
 
 # CORS
 app.add_middleware(

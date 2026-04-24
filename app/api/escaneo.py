@@ -121,12 +121,8 @@ async def add_manual_link(
     return {"message": "Link agregado y procesamiento iniciado", "articulo_id": articulo.id}
 
 
-@router.get("/articulos", response_model=list[ArticuloResponse])
-def list_articulos(
-    estado: str = None,
-    fuente_id: int = None,
-    limit: int = 50,
-    offset: int = 0,
+@router.get("/status")
+def scan_status(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -139,6 +135,35 @@ def list_articulos(
 
     articles = query.order_by(Articulo.created_at.desc()).offset(offset).limit(limit).all()
     return [ArticuloResponse.model_validate(a) for a in articles]
+
+
+@router.delete("/articulos/{articulo_id}")
+def delete_articulo(
+    articulo_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("administrador"))
+):
+    """Delete an article by ID."""
+    articulo = db.query(Articulo).filter(Articulo.id == articulo_id).first()
+    if not articulo:
+        raise HTTPException(status_code=404, detail="Artículo no encontrado")
+    db.delete(articulo)
+    db.commit()
+    return {"message": f"Artículo {articulo_id} eliminado"}
+
+
+@router.delete("/articulos-error")
+def delete_all_error_articulos(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("administrador"))
+):
+    """Delete all articles with estado=error."""
+    articulos = db.query(Articulo).filter(Articulo.estado == "error").all()
+    count = len(articulos)
+    for a in articulos:
+        db.delete(a)
+    db.commit()
+    return {"message": f"{count} artículos eliminados"}
 
 
 @router.get("/status")

@@ -160,7 +160,8 @@ async def process_article(articulo, db):
 
 async def call_llm(prompt: str) -> Optional[str]:
     """Call the configured LLM provider."""
-    provider = settings.LLM_PROVIDER
+    # Forzamos "opencode" para ignorar cualquier variable de entorno trabada en "mock"
+    provider = "opencode"
 
     if provider == "mock":
         return _mock_llm_response(prompt)

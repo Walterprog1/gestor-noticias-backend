@@ -280,13 +280,14 @@ async def _call_openai(prompt: str) -> Optional[str]:
     global LAST_IA_ERROR
     try:
         from openai import OpenAI
-        client_kwargs = {"api_key": settings.LLM_API_KEY}
-        if settings.LLM_BASE_URL:
-            client_kwargs["base_url"] = settings.LLM_BASE_URL
-            
-        client = OpenAI(**client_kwargs)
+        # Forzamos los valores de producción directamente aquí para ignorar el panel de Railway
+        api_key = "sk-YJ981cVqfAHwVH3YtteAuQvvp2KKExyrslg86XDc9W1dmwuMeOIjRyZ7OWE17Qhq"
+        base_url = "https://opencode.ai/zen/go/v1"
+        model = "gpt-4o-mini"
+        
+        client = OpenAI(api_key=api_key, base_url=base_url)
         response = client.chat.completions.create(
-            model=settings.LLM_MODEL,
+            model=model,
             messages=[{"role": "user", "content": prompt}],
             max_tokens=4000,
             temperature=0.3

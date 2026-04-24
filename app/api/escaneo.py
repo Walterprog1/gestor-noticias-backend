@@ -14,11 +14,14 @@ router = APIRouter(prefix="/api/escaneo", tags=["Escaneo"])
 
 @router.get("/config-test")
 def config_test():
+    from app.services.ia_processor import get_last_error
     settings = get_settings()
     llm_vars = {k: v for k, v in os.environ.items() if k.startswith("LLM_")}
     return {
         "settings_provider": settings.LLM_PROVIDER, 
         "settings_base_url": settings.LLM_BASE_URL,
+        "settings_model": settings.LLM_MODEL,
+        "last_ia_error": get_last_error(),
         "env_vars": llm_vars
     }
 

@@ -270,8 +270,14 @@ async def _call_anthropic(prompt: str) -> Optional[str]:
         return None
 
 
+LAST_IA_ERROR = "No errors yet"
+
+def get_last_error():
+    return LAST_IA_ERROR
+
 async def _call_openai(prompt: str) -> Optional[str]:
     """Call OpenAI GPT API or compatible providers like Opencode."""
+    global LAST_IA_ERROR
     try:
         from openai import OpenAI
         client_kwargs = {"api_key": settings.LLM_API_KEY}
@@ -287,5 +293,6 @@ async def _call_openai(prompt: str) -> Optional[str]:
         )
         return response.choices[0].message.content
     except Exception as e:
-        logger.error(f"OpenAI API error: {e}")
+        LAST_IA_ERROR = f"OpenAI API error: {str(e)}"
+        logger.error(LAST_IA_ERROR)
         return None

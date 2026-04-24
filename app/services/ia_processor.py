@@ -280,12 +280,11 @@ async def _call_openai(prompt: str) -> Optional[str]:
     global LAST_IA_ERROR
     try:
         from openai import OpenAI
-        # Forzamos los valores de producción directamente aquí para ignorar el panel de Railway
-        api_key = "sk-2j1GQbg61s8pd66gTIIBxUXlirTvXAg95DG1k1y2FJocA3DR6hm1KAyGHr3pOjOr"
-        base_url = "https://opencode.ai/zen/v1"
+        api_key = settings.LLM_API_KEY
+        base_url = settings.LLM_BASE_URL
         
         # Lista de modelos prioritarios recomendados por el usuario
-        models_to_try = ["big-pickle", "minimax-m2.5-free", "gpt-4o", "gpt-4o-mini"]
+        models_to_try = [settings.LLM_MODEL, "big-pickle", "minimax-m2.5-free", "gpt-4o", "gpt-4o-mini"]
         
         client = OpenAI(api_key=api_key, base_url=base_url)
         

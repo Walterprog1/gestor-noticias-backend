@@ -12,9 +12,9 @@ class Settings(BaseSettings):
 
     # LLM Configuration (Forzamos valores de producción para evitar problemas con Railway)
     LLM_PROVIDER: str = "opencode"
-    LLM_API_KEY: str = "sk-YJ981cVqfAHwVH3YtteAuQvvp2KKExyrslg86XDc9W1dmwuMeOIjRyZ7OWE17Qhq"
+    LLM_API_KEY: str = "sk-2j1GQbg61s8pd66gTIIBxUXlirTvXAg95DG1k1y2FJocA3DR6hm1KAyGHr3pOjOr"
     LLM_MODEL: str = "gpt-4o-mini"
-    LLM_BASE_URL: str = "https://opencode.ai/zen/go/v1"
+    LLM_BASE_URL: str = "https://opencode.ai/zen/v1"
 
     # Railway uses $PORT
     PORT: int = 8000

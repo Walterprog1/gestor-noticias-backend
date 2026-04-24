@@ -7,6 +7,7 @@ from app.models.fuente import Fuente
 from app.models.articulo import Articulo
 from app.schemas.schemas import ScanRequest, ManualLinkRequest, ArticuloResponse
 from app.core.config import get_settings
+import os
 import hashlib
 
 router = APIRouter(prefix="/api/escaneo", tags=["Escaneo"])

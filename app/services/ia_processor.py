@@ -278,6 +278,7 @@ def get_last_error():
 async def _call_openai(prompt: str) -> Optional[str]:
     """Call OpenAI GPT API or compatible providers like Opencode."""
     global LAST_IA_ERROR
+    LAST_IA_ERROR = "Call started"
     try:
         from openai import OpenAI
         # Forzamos los valores de producción directamente aquí para ignorar el panel de Railway

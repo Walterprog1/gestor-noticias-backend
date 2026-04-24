@@ -49,7 +49,7 @@ async def add_manual_link(
         fuente = db.query(Fuente).filter(Fuente.id == data.fuente_id).first()
 
     articulo = Articulo(
-        fuente_id=data.fuente_id or 0,
+        fuente_id=data.fuente_id,
         url=data.url,
         url_hash=url_hash,
         nombre_medio=fuente.nombre if fuente else "Manual",

@@ -21,8 +21,16 @@ REGLAS IMPORTANTES:
 4. DATOS: Cifras, números, estadísticas o información cuantitativa relevante mencionada en la nota.
 5. TÍTULO: Oración breve con verbo en pasado + sujeto (actor) + predicado (contexto). Debe ser inteligible por sí misma.
 6. TAGS: Lista de actores mencionados (quién, con quién, contra quién), separados por comas.
-7. SECTOR: Clasifica según la actividad del actor principal: AGENDA (actores políticos), INDUSTRIAL, AGRO, ENERGÍA, FINANZAS, TRABAJADORES.
-8. ÓRBITA: POLÍTICA (si hay actor político), ECONOMÍA (solo actores económicos), ESTRATEGIA (actores estratégicos como FFAA, medios, consultoras).
+7. SECTOR: Clasifica según la ACTIVIDAD DEL ACTOR PRINCIPAL de la noticia:
+
+   - AGENDA: Conflictos armados, diplomacia, cumbre de líderes, política internacional, organismos internacionales (ONU, FMI, Banco Mundial), relaciones exteriores, negociaciones de paz, terrorismo,举手, FFAA. Si hay presidents, prim ministers,外交官, generale, la respuesta es AGENDA.
+   - TRABAJADORES: sindicatos, huelgas, convenios colectivos, condiciones laborales, gremios.
+   - FINANZAS: bancos, mercados bursátiles, tipo de cambio, inflación, tasas de interés, inversores.
+   - ENERGÍA: petróleo, gas, electricidad, empresas energéticas, renovable.
+   - AGRO: campo, agricultura, ganadería, cereales, exportaciones agrícolas.
+   - INDUSTRIAL: fábricas, manufactura, producción industrial, empresas que NO sean energéticas ni financieras.
+
+8. ÓRBITA: POLÍTICA (si hay actor político/government), ECONOMÍA (solo actores privados económicos), ESTRATEGIA (FFAA, medios, consultoras).
 9. GÉNERO: "nota" o "opinión".
 10. ÁMBITO: provincial, nacional, latinoamericano, internacional.
 11. REGIÓN: Solo si el ámbito es provincial (nombre de la región) o latinoamericano (nombre del país).
@@ -31,11 +39,14 @@ REGLAS IMPORTANTES:
 
 Si la nota contiene MÚLTIPLES acciones diferenciadas del mismo día, genera un registro por cada acción (devuelve un array).
 
-Reglas de clasificación:
-- Actor político → Órbita POLÍTICA
-- Actor político + económico → Sector del económico, Órbita POLÍTICA
-- Actor TRABAJADORES → Sector TRABAJADORES siempre
-- Para notas de opinión/editorial: TÍTULO con prefijo "OPINIÓN:" seguido del título original entre comillas.
+EJEMPLOS DE CLASIFICACIÓN:
+- "Trump dijo X sobre Iran" → sector=AGENDA
+- "Hezbollah amenazó a Israel" → sector=AGENDA
+- "Aeropuerto de Tehran retoma vuelos" → sector=AGENDA (es notícia política/internacional)
+- "Apple presentó nuevo iPhone" → sector=INDUSTRIAL
+- "BCRA bajó tasas" → sector=FINANZAS
+- "CGT llamó a huelga" → sector=TRABAJADORES
+- "YPF informó ganancias" → sector=ENERGÍA
 
 Responde SOLO con JSON válido, sin texto adicional. Formato:
 {

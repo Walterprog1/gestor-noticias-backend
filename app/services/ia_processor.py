@@ -160,8 +160,7 @@ async def process_article(articulo, db):
 
 async def call_llm(prompt: str) -> Optional[str]:
     """Call the configured LLM provider."""
-    # Forzamos "mock" temporalmente para evitar el bug de Railway
-    provider = "mock"
+    provider = settings.LLM_PROVIDER
 
     if provider == "mock":
         return _mock_llm_response(prompt)

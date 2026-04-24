@@ -278,23 +278,40 @@ def get_last_error():
 async def _call_openai(prompt: str) -> Optional[str]:
     """Call OpenAI GPT API or compatible providers like Opencode."""
     global LAST_IA_ERROR
-    LAST_IA_ERROR = "Call started"
     try:
         from openai import OpenAI
         # Forzamos los valores de producción directamente aquí para ignorar el panel de Railway
         api_key = "sk-YJ981cVqfAHwVH3YtteAuQvvp2KKExyrslg86XDc9W1dmwuMeOIjRyZ7OWE17Qhq"
         base_url = "https://opencode.ai/zen/go/v1"
-        model = "gpt-5.4-mini"
+        
+        # Lista de modelos para probar (fallback)
+        models_to_try = ["gpt-4o", "gpt-4o-mini", "claude-3-5-sonnet-20241022", "gpt-3.5-turbo", "gpt-5.4-mini"]
         
         client = OpenAI(api_key=api_key, base_url=base_url)
-        response = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=4000,
-            temperature=0.3
-        )
-        return response.choices[0].message.content
+        
+        last_exception = None
+        for model_name in models_to_try:
+            try:
+                LAST_IA_ERROR = f"Iniciando llamada con modelo: {model_name}"
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=4000,
+                    temperature=0.3
+                )
+                # Si llegamos aquí, funcionó
+                LAST_IA_ERROR = f"Éxito con modelo: {model_name}"
+                return response.choices[0].message.content
+            except Exception as e:
+                last_exception = e
+                logger.warning(f"Model {model_name} failed: {e}")
+                continue
+        
+        # Si todos fallaron
+        LAST_IA_ERROR = f"Todos los modelos fallaron. Último error: {str(last_exception)}"
+        logger.error(LAST_IA_ERROR)
+        return None
     except Exception as e:
-        LAST_IA_ERROR = f"OpenAI API error: {str(e)}"
+        LAST_IA_ERROR = f"Error general en _call_openai: {str(e)}"
         logger.error(LAST_IA_ERROR)
         return None

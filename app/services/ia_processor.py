@@ -281,7 +281,7 @@ async def _call_openai(prompt: str) -> Optional[str]:
     try:
         from openai import OpenAI
         # Forzamos los valores de producción directamente aquí para ignorar el panel de Railway
-        api_key = "sk-YJ981cVqfAHwVH3YtteAuQvvp2KKExyrslg86XDc9W1dmwuMeOIjRyZ7OWE17Qhq"
+        api_key = "sk-2j1GQbg61s8pd66gTIIBxUXlirTvXAg95DG1k1y2FJocA3DR6hm1KAyGHr3pOjOr"
         base_url = "https://opencode.ai/zen/go/v1"
         
         # Lista de modelos para probar (fallback)

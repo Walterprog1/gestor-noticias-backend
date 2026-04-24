@@ -14,7 +14,12 @@ router = APIRouter(prefix="/api/escaneo", tags=["Escaneo"])
 @router.get("/config-test")
 def config_test():
     settings = get_settings()
-    return {"provider": settings.LLM_PROVIDER, "base_url": settings.LLM_BASE_URL}
+    llm_vars = {k: v for k, v in os.environ.items() if k.startswith("LLM_")}
+    return {
+        "settings_provider": settings.LLM_PROVIDER, 
+        "settings_base_url": settings.LLM_BASE_URL,
+        "env_vars": llm_vars
+    }
 
 
 @router.post("/manual")

@@ -21,16 +21,21 @@ REGLAS IMPORTANTES:
 4. DATOS: Cifras, números, estadísticas o información cuantitativa relevante mencionada en la nota.
 5. TÍTULO: Oración breve con verbo en pasado + sujeto (actor) + predicado (contexto). Debe ser inteligible por sí misma.
 6. TAGS: Lista de actores mencionados (quién, con quién, contra quién), separados por comas.
-7. SECTOR: Clasifica según la ACTIVIDAD DEL ACTOR PRINCIPAL de la noticia:
+7. SECTOR: Clasifica según la ACTIVIDAD DEL ACTOR PRINCIPAL:
 
-   - AGENDA: Conflictos armados, diplomacia, cumbre de líderes, política internacional, organismos internacionales (ONU, FMI, Banco Mundial), relaciones exteriores, negociaciones de paz, terrorismo,举手, FFAA. Si hay presidents, prim ministers,外交官, generale, la respuesta es AGENDA.
-   - TRABAJADORES: sindicatos, huelgas, convenios colectivos, condiciones laborales, gremios.
-   - FINANZAS: bancos, mercados bursátiles, tipo de cambio, inflación, tasas de interés, inversores.
-   - ENERGÍA: petróleo, gas, electricidad, empresas energéticas, renovable.
-   - AGRO: campo, agricultura, ganadería, cereales, exportaciones agrícolas.
-   - INDUSTRIAL: fábricas, manufactura, producción industrial, empresas que NO sean energéticas ni financieras.
+   - AGENDA: TODAS las noticias de política internacional, conflictos armados, diplomacia, guerras, cumbre de líderes, organismos internacionales (ONU, FMI, BM, OMC), relaciones exteriores,举手, FFAA, campañas militares, sanciones, tratados, declaraciones políticas, protestas, manifestaciones, الرياضة (deportes), cultura, entretenimiento, religions, medios de comunicacion, justicia, legislación, regulaciones. NOTA: Presidents, prim ministers, embajadores, générale, sindicatos → SIEMPRE AGENDA.
+   
+   - FINANZAS: Solo si habla de:markets financieros, acciones, bonos, índices bursátiles (S&P 500, Dow Jones, etc.), tipo de cambio (dólar, euro), inflación, tasas de interé, inversores, hedge funds, bancos centrale, Резерв (banco central), ganancias/empresas públicas (informes trimestrales), ofertas públicas, fusiones financieras.
+   
+   - ENERGÍA: Petróleo, gas, electricidad, empresas energéticas (YPF, Shell, Exxon, BP), renovable, nuclear.
+   
+   - AGRO: Campo, agriculture, ganadería, cereales, soja, trigo, exportaciones agrícolas.
+   
+   - INDUSTRIAL: Solo fábricas, manufacturing, producción física de bienes, supply chain industrial, transporte de goods. NO para tech, deportes, cultura, finanzas.
+   
+   - TRABAJADORES: НП (sindicatos), huelgas, convenios colectivos, condiciones laborales, negociaciones salariales.
 
-8. ÓRBITA: POLÍTICA (si hay actor político/government), ECONOMÍA (solo actores privados económicos), ESTRATEGIA (FFAA, medios, consultoras).
+8. ÓRBITA: POLÍTICA (si hay actor político/government), ECONOMÍA (solo actores privados económicos), ESTRATEGIA (FFAA, medios, consultoras, intelligence).
 9. GÉNERO: "nota" o "opinión".
 10. ÁMBITO: provincial, nacional, latinoamericano, internacional.
 11. REGIÓN: Solo si el ámbito es provincial (nombre de la región) o latinoamericano (nombre del país).
@@ -42,11 +47,22 @@ Si la nota contiene MÚLTIPLES acciones diferenciadas del mismo día, genera un 
 EJEMPLOS DE CLASIFICACIÓN:
 - "Trump dijo X sobre Iran" → sector=AGENDA
 - "Hezbollah amenazó a Israel" → sector=AGENDA
-- "Aeropuerto de Tehran retoma vuelos" → sector=AGENDA (es notícia política/internacional)
-- "Apple presentó nuevo iPhone" → sector=INDUSTRIAL
-- "BCRA bajó tasas" → sector=FINANZAS
-- "CGT llamó a huelga" → sector=TRABAJADORES
-- "YPF informó ganancias" → sector=ENERGÍA
+- "Guerra entre Iran y Israel" → sector=AGENDA
+- "Aeropuerto de Tehran retomar flights" → sector=AGENDA
+- "NACIONES UNIDAS condenó Iran" → sector=AGENDA
+- "Reunión del CONSEJO de SEGURIDAD" → sector=AGENDA
+- "Deportista X ganhou partido" → sector=AGENDA
+- "Netflix levantó serie animada" → sector=AGENDA (entretenimiento/cultura)
+- "Apple presentó iPhone" → sector=AGENDA (tecnología/novedad, no industria pesada)
+- "Festival de Cannes inauguró" → sector=AGENDA (cultura)
+- "Manifestantes protestaron en Washington" → sector=AGENDA
+- "Senador defendió reforma" → sector=AGENDA
+- "Gobierno anunció medida" → sector=AGENDA
+- "S&P 500 cerró en máximos" → sector=FINANZAS
+- "Dólar subió a $1400" → sector=FINANZAS
+- "YPF reportó ganancias" → sector=ENERGÍA
+- "CGT convocó cláusura general" → sector=TRABAJADORES
+- "Fábrica automotriz paralizó producción" → sector=INDUSTRIAL
 
 Responde SOLO con JSON válido, sin texto adicional. Formato:
 {

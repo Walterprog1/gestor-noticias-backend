@@ -6,9 +6,15 @@ from app.models.user import User
 from app.models.fuente import Fuente
 from app.models.articulo import Articulo
 from app.schemas.schemas import ScanRequest, ManualLinkRequest, ArticuloResponse
+from app.core.config import get_settings
 import hashlib
 
 router = APIRouter(prefix="/api/escaneo", tags=["Escaneo"])
+
+@router.get("/config-test")
+def config_test():
+    settings = get_settings()
+    return {"provider": settings.LLM_PROVIDER, "base_url": settings.LLM_BASE_URL}
 
 
 @router.post("/manual")

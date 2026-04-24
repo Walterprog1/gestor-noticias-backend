@@ -10,11 +10,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # LLM Configuration
-    LLM_PROVIDER: str = "opencode"  # "anthropic", "openai", "opencode", or "mock"
-    LLM_API_KEY: str = ""
-    LLM_MODEL: str = "claude-3-5-sonnet-20241022"
-    LLM_BASE_URL: str = ""
+    # LLM Configuration (Forzamos valores de producción para evitar problemas con Railway)
+    LLM_PROVIDER: str = "opencode"
+    LLM_API_KEY: str = "sk-YJ981cVqfAHwVH3YtteAuQvvp2KKExyrslg86XDc9W1dmwuMeOIjRyZ7OWE17Qhq"
+    LLM_MODEL: str = "gpt-4o-mini"
+    LLM_BASE_URL: str = "https://opencode.ai/zen/go/v1"
 
     # Railway uses $PORT
     PORT: int = 8000

@@ -283,7 +283,7 @@ async def _call_openai(prompt: str) -> Optional[str]:
         # Forzamos los valores de producción directamente aquí para ignorar el panel de Railway
         api_key = "sk-YJ981cVqfAHwVH3YtteAuQvvp2KKExyrslg86XDc9W1dmwuMeOIjRyZ7OWE17Qhq"
         base_url = "https://opencode.ai/zen/go/v1"
-        model = "gpt-4o-mini"
+        model = "gpt-5.4-mini"
         
         client = OpenAI(api_key=api_key, base_url=base_url)
         response = client.chat.completions.create(

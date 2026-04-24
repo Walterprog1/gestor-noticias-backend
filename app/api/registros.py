@@ -1,3 +1,5 @@
+import asyncio
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -13,6 +15,7 @@ from app.schemas.schemas import (
 )
 
 router = APIRouter(prefix="/api/registros", tags=["Registros"])
+logger = logging.getLogger(__name__)
 
 
 def _enrich_registro(registro: Registro, db: Session) -> dict:
@@ -259,3 +262,53 @@ def batch_action(
 
     db.commit()
     return {"message": f"{count} registros {'aprobados' if data.action == 'aprobar' else 'rechazados'}"}
+
+
+@router.post("/reprocesar-sector")
+def reprocesar_por_sector(
+    sector_incorrecto: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("administrador"))
+):
+    """Borrar y reprocesar artículos que generaron registros con sector incorrecto."""
+    from app.services.ia_processor import process_article
+    from app.models.articulo import Articulo
+    
+    # Encontrar todos los registros con ese sector que aún no fueron aprobados
+    registros = db.query(Registro).filter(
+        Registro.sector == sector_incorrecto,
+        Registro.estado == "procesado"
+    ).all()
+    
+    if not registros:
+        return {"message": f"No hay registros con sector={sector_incorrecto} para reprocesar"}
+    
+    # Obtener los article_ids únicos
+    article_ids = list(set(r.articulo_id for r in registros))
+    
+    # Borrar los registros generados por IA
+    for r in registros:
+        db.delete(r)
+    db.commit()
+    
+    # Reprocesar los artículos
+    reprocesados = 0
+    errores = 0
+    for aid in article_ids:
+        articulo = db.query(Articulo).filter(Articulo.id == aid).first()
+        if articulo:
+            try:
+                # Resetear estado para reprocesar
+                articulo.estado = "crudo"
+                db.commit()
+                import asyncio
+                asyncio.run(process_article(articulo, db))
+                reprocesados += 1
+            except Exception as e:
+                errores += 1
+                logger.error(f"Error reprocesando artículo {aid}: {e}")
+    
+    return {
+        "message": f"Reprocesados {reprocesados} artículos, {errores} errores",
+        "articulos_reprocesados": article_ids
+    }

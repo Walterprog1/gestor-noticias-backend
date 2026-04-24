@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # LLM Configuration (Forzamos valores de producción para evitar problemas con Railway)
+    # LLM Configuration - FORZADOS para ignorar Railway env vars
     LLM_PROVIDER: str = "opencode"
     LLM_API_KEY: str = "sk-2j1GQbg61s8pd66gTIIBxUXlirTvXAg95DG1k1y2FJocA3DR6hm1KAyGHr3pOjOr"
     LLM_MODEL: str = "big-pickle"
@@ -21,8 +21,15 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        env = None
 
 
 @lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    s = Settings()
+    # Forzar valores correctos ignore environment
+    s.LLM_PROVIDER = "opencode"
+    s.LLM_API_KEY = "sk-2j1GQbg61s8pd66gTIIBxUXlirTvXAg95DG1k1y2FJocA3DR6hm1KAyGHr3pOjOr"
+    s.LLM_MODEL = "big-pickle"
+    s.LLM_BASE_URL = "https://opencode.ai/zen/v1"
+    return s

@@ -29,28 +29,42 @@ def config_test():
 async def retry_errors(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """Reset all error articles to crudo and re-trigger processing."""
     from app.services.scraping import _process_single_article
+    from app.core.database import SessionLocal
     from sqlalchemy import or_
+    
     articulos = db.query(Articulo).filter(or_(Articulo.estado == "error", Articulo.estado == "crudo")).all()
     count = len(articulos)
     
-    for a in articulos:
-        a.estado = "crudo"
-    db.commit()
+    debug_results = []
+    # Procesamos 3 síncronos para ver el error real en la respuesta
+    for a in articulos[:3]:
+        try:
+            a.estado = "crudo"
+            db.commit()
+            await _process_single_article(a.id, db)
+            db.refresh(a)
+            debug_results.append({"id": a.id, "nuevo_estado": a.estado})
+        except Exception as e:
+            debug_results.append({"id": a.id, "error": str(e)})
 
-    async def process_all():
-        from app.core.database import SessionLocal
+    async def process_all_async(ids):
         new_db = SessionLocal()
         try:
-            for a in articulos:
+            for aid in ids:
                 try:
-                    await _process_single_article(a.id, new_db)
-                except Exception as e:
-                    print(f"Error re-processing article {a.id}: {e}")
+                    await _process_single_article(aid, new_db)
+                except Exception:
+                    pass
         finally:
             new_db.close()
     
-    background_tasks.add_task(process_all)
-    return {"message": f"Reiniciando el proceso para {count} artículos."}
+    remaining_ids = [a.id for a in articulos[3:]]
+    background_tasks.add_task(process_all_async, remaining_ids)
+    
+    return {
+        "message": f"Procesamiento iniciado. Total: {count}",
+        "debug_sync_results": debug_results
+    }
 
 
 @router.post("/manual")

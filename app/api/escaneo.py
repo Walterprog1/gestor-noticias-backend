@@ -121,8 +121,12 @@ async def add_manual_link(
     return {"message": "Link agregado y procesamiento iniciado", "articulo_id": articulo.id}
 
 
-@router.get("/status")
-def scan_status(
+@router.get("/articulos", response_model=list[ArticuloResponse])
+def list_articulos(
+    estado: str = None,
+    fuente_id: int = None,
+    limit: int = 50,
+    offset: int = 0,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):

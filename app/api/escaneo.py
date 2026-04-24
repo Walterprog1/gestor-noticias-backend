@@ -37,11 +37,16 @@ async def retry_errors(background_tasks: BackgroundTasks, db: Session = Depends(
     db.commit()
 
     async def process_all():
-        for a in articulos:
-            try:
-                await _process_single_article(a.id, db)
-            except Exception:
-                pass
+        from app.core.database import SessionLocal
+        new_db = SessionLocal()
+        try:
+            for a in articulos:
+                try:
+                    await _process_single_article(a.id, new_db)
+                except Exception as e:
+                    print(f"Error re-processing article {a.id}: {e}")
+        finally:
+            new_db.close()
     
     background_tasks.add_task(process_all)
     return {"message": f"Reiniciando el proceso para {count} artículos."}

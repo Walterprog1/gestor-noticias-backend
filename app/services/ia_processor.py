@@ -14,57 +14,36 @@ settings = get_settings()
 # Default processing prompt
 DEFAULT_PROMPT = """Eres un analista editorial experto. Analiza la siguiente noticia y genera un registro estructurado en formato JSON.
 
-REGLAS IMPORTANTES:
-1. QUÉ: Describe el acontecimiento principal SIN subjetividad periodística. Debe ser una oración completa con acción, actores y lugar. Excluye análisis, adjetivación y opinión del periodista.
-2. QUIÉN: Nombre del actor, su función/cargo y declaración textual (entre comillas si la original lo está). Excluye texto agregado por el periodista fuera de comillas.
-3. POR QUÉ: Contexto y antecedentes mencionados en la nota. Solo hechos anteriores que el periodista recupera, NO acciones del día de la noticia.
-4. DATOS: Cifras, números, estadísticas o información cuantitativa relevante mencionada en la nota.
-5. TÍTULO: Oración breve con verbo en pasado + sujeto (actor) + predicado (contexto). Debe ser inteligible por sí misma.
-6. TAGS: Lista de actores mencionados (quién, con quién, contra quién), separados por comas.
-7. SECTOR: Clasifica según la ACTIVIDAD DEL ACTOR PRINCIPAL:
+REGLAS DE CLASIFICACIÓN DE SECTOR (MUY IMPORTANTE):
 
-   - AGENDA: TODAS las noticias de política internacional, conflictos armados, diplomacia, guerras, cumbre de líderes, organismos internacionales (ONU, FMI, BM, OMC), relaciones exteriores,举手, FFAA, campañas militares, sanciones, tratados, declaraciones políticas, protestas, manifestaciones, الرياضة (deportes), cultura, entretenimiento, religions, medios de comunicacion, justicia, legislación, regulaciones. NOTA: Presidents, prim ministers, embajadores, générale, sindicatos → SIEMPRE AGENDA.
-   
-   - FINANZAS: Solo si habla de:markets financieros, acciones, bonos, índices bursátiles (S&P 500, Dow Jones, etc.), tipo de cambio (dólar, euro), inflación, tasas de interé, inversores, hedge funds, bancos centrale, Резерв (banco central), ganancias/empresas públicas (informes trimestrales), ofertas públicas, fusiones financieras.
-   
-   - ENERGÍA: Petróleo, gas, electricidad, empresas energéticas (YPF, Shell, Exxon, BP), renovable, nuclear.
-   
-   - AGRO: Campo, agriculture, ganadería, cereales, soja, trigo, exportaciones agrícolas.
-   
-   - INDUSTRIAL: Solo fábricas, manufacturing, producción física de bienes, supply chain industrial, transporte de goods. NO para tech, deportes, cultura, finanzas.
-   
-   - TRABAJADORES: НП (sindicatos), huelgas, convenios colectivos, condiciones laborales, negociaciones salariales.
+- AGENDA: CASI TODAS LAS NOTICIAS. Incluye: política, diplomacia, guerras, conflictos, declaraciones de líderes, organismos internacionales (ONU, FMI), justicia, legislativas, regulaciones, protestas, sindicatos, deportes, cultura, entretenimiento, tecnología, medios, religión, justicia, investigaciones, arrestos, sepakbola, básquet, tenis, NFL, NBA, UEFA, FIFA, festivales, cine, streaming (Netflix, Disney+, etc.), arte, música, salud pública, farmacéutica, regulatory agencies (FDA, EMA), elecciones, campañas, votaciones, desastres naturales, accidentes, crímenes, terrorismo, ciberseguridad.
 
-8. ÓRBITA: POLÍTICA (si hay actor político/government), ECONOMÍA (solo actores privados económicos), ESTRATEGIA (FFAA, medios, consultoras, intelligence).
-9. GÉNERO: "nota" o "opinión".
-10. ÁMBITO: provincial, nacional, latinoamericano, internacional.
-11. REGIÓN: Solo si el ámbito es provincial (nombre de la región) o latinoamericano (nombre del país).
-12. RELEVANTE: true si la nota contiene un actor que realiza una acción o declaración, false si no.
-13. MOTIVO_NO_RELEVANTE: Si no es relevante, explica brevemente por qué.
+- FINANZAS: SOLO mercados financieros: индексы bursátiles (S&P 500, Dow, Nasdaq, Bovespa, Merval), tipo de cambio (dólar/euro/yen), tasas de interés del banco central, inflación,货币政策, resultados trimestrales de empresas (si habla de ganancias/pérdidas en bolsa), hedge funds, venture capital, IPOs, ofertas públicas.
 
-Si la nota contiene MÚLTIPLES acciones diferenciadas del mismo día, genera un registro por cada acción (devuelve un array).
+- INDUSTRIAL: SOLO producción manufacturera pesada: fábricas de autos, plantas siderúrgicas, astilleros, refineries, chemical plants, production lines, assembly lines, manufacturing. NOTA: Empresas de tecnología que NO producen bienes físicos → van a AGENDA.
 
-EJEMPLOS DE CLASIFICACIÓN:
-- "Trump dijo X sobre Iran" → sector=AGENDA
-- "Hezbollah amenazó a Israel" → sector=AGENDA
-- "Guerra entre Iran y Israel" → sector=AGENDA
-- "Aeropuerto de Tehran retomar flights" → sector=AGENDA
-- "NACIONES UNIDAS condenó Iran" → sector=AGENDA
-- "Reunión del CONSEJO de SEGURIDAD" → sector=AGENDA
-- "Deportista X ganhou partido" → sector=AGENDA
-- "Netflix levantó serie animada" → sector=AGENDA (entretenimiento/cultura)
-- "Apple presentó iPhone" → sector=AGENDA (tecnología/novedad, no industria pesada)
-- "Festival de Cannes inauguró" → sector=AGENDA (cultura)
-- "Manifestantes protestaron en Washington" → sector=AGENDA
-- "Senador defendió reforma" → sector=AGENDA
-- "Gobierno anunció medida" → sector=AGENDA
-- "S&P 500 cerró en máximos" → sector=FINANZAS
-- "Dólar subió a $1400" → sector=FINANZAS
-- "YPF reportó ganancias" → sector=ENERGÍA
-- "CGT convocó cláusura general" → sector=TRABAJADORES
-- "Fábrica automotriz paralizó producción" → sector=INDUSTRIAL
+- ENERGÍA: Petróleo, gas, electricidad, nuclear, renewables, empresas energéticas (BP, Shell, Exxon, YPF, Chevron).
 
-Responde SOLO con JSON válido, sin texto adicional. Formato:
+- AGRO: Campo, agriculture, ganadería, cereales, soja, trigo, maíz, granos, exportaciones agrícolas.
+
+- TRABAJADORES: НП/sindicatos, huelgas laborales, negociaciones salariales, condiciones de trabajo.
+
+REGLAS ADICIONALES:
+1. QUÉ: Describe el acontecimiento principal SIN subjetividad. Solo hechos.
+2. QUIÉN: Actor + cargo. Declaraciones entre comillas.
+3. POR QUÉ: Contexto histórico/anecdótico de la noticia.
+4. DATOS: Números relevantes.
+5. TÍTULO: Verbo en pasado + sujeto + predicado.
+6. TAGS: Actores mencionados separados por comas.
+7. ÓRBITA: POLÍTICA si hay government/político, ECONOMÍA si hay actor privado, ESTRATEGIA si hay FFAA/inteligencia.
+8. GÉNERO: "nota" o "opinión".
+9. ÁMBITO: provincial, nacional, latinoamericano, internacional.
+10. REGIÓN: Solo para provincial o latinoamericano.
+11. RELEVANTE: true si hay actor + acción, false si no.
+
+Si hay MÚLTIPLES acciones diferenciadas, genera un registro por cada una.
+
+Responde SOLO con JSON válido. Formato:
 {
   "relevante": true/false,
   "motivo_no_relevante": "...",

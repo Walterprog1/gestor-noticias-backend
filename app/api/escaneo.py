@@ -25,6 +25,27 @@ def config_test():
         "env_vars": llm_vars
     }
 
+@router.post("/retry-errors")
+async def retry_errors(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    """Reset all error articles to crudo and re-trigger processing."""
+    from app.services.scraping import _process_single_article
+    articulos = db.query(Articulo).filter(Articulo.estado == "error").all()
+    count = len(articulos)
+    
+    for a in articulos:
+        a.estado = "crudo"
+    db.commit()
+
+    async def process_all():
+        for a in articulos:
+            try:
+                await _process_single_article(a.id, db)
+            except Exception:
+                pass
+    
+    background_tasks.add_task(process_all)
+    return {"message": f"Reiniciando el proceso para {count} artículos."}
+
 
 @router.post("/manual")
 async def scan_fuente(

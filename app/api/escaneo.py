@@ -29,7 +29,8 @@ def config_test():
 async def retry_errors(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """Reset all error articles to crudo and re-trigger processing."""
     from app.services.scraping import _process_single_article
-    articulos = db.query(Articulo).filter(Articulo.estado == "error").all()
+    from sqlalchemy import or_
+    articulos = db.query(Articulo).filter(or_(Articulo.estado == "error", Articulo.estado == "crudo")).all()
     count = len(articulos)
     
     for a in articulos:

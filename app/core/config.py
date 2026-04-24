@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # LLM Configuration
-    LLM_PROVIDER: str = "mock"  # "anthropic", "openai", "opencode", or "mock"
+    LLM_PROVIDER: str = "opencode"  # "anthropic", "openai", "opencode", or "mock"
     LLM_API_KEY: str = ""
     LLM_MODEL: str = "claude-3-5-sonnet-20241022"
     LLM_BASE_URL: str = ""

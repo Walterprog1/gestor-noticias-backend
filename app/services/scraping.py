@@ -58,13 +58,24 @@ SECCIONES_EXCLUIR = [
 
 # Patrones de actores politicos (si aparecen, se mantiene aunque sea seccion excluida)
 PATRONES_ACTORES_POLITICOS = [
+    # Actores políticos
     r"\bpresidente\b", r"\bpresidenta\b", r"\bgobierno\b", r"\bministerio\b",
     r"\bministro\b", r"\bministra\b", r"\bcongreso\b", r"\bsenado\b",
     r"\bsenador\b", r"\bsenadora\b", r"\bdiputado\b", r"\bdiputada\b",
     r"\bgovernador\b", r"\bgovernadora\b", r"\balcalde\b", r"\balcaldesa\b",
     r"\bsecretario\b", r"\bsecretaria\b", r"\bfuncionario\b", r"\bautoridad\b",
-    r"\bcasa rosa\b", r"\bpalacio\b", r"\bcasa de gobierno\b", r"\bnacion\b",
-    r"\bestado\b", r"\bunion\b", r"\bmarco legal\b"
+    # Entidades gubernamentales
+    r"\bsecretar[ií]a\b", r"\bdependencia\b", r"\borganismo\b",
+    r"\bcomit[eé]\b", r"\bconsejo\b", r"\binstituto\b", r"\bagencia\b",
+    r"\bcomisi[oó]n\b", r"\bdirecci[oó]n\b", r"\bsubsecretar[ií]a\b",
+    r"\bgobierno\b.*\bestatal\b", r"\bestado\b.*\bemiti[oó]\b",
+    r"\bcomunicado\b.*\boficial\b",
+    # Contextos gubernamentales
+    r"\bpalacio\b", r"\bcasa de gobierno\b", r"\bnaci[oó]n\b",
+    r"\bestado\b", r"\bgabinete\b", r"\bpol[ií]tica\b.*\boficial\b",
+    # Siglas específicas
+    r"\bSegam\b", r"\bSedema\b", r"\bSemarnat\b", r"\bINE\b",
+    r"\bINAH\b", r"\bSAT\b", r"\bBNCR\b",
 ]
 
 RE_POLITICOS = re.compile("|".join(PATRONES_ACTORES_POLITICOS), re.IGNORECASE)

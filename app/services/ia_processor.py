@@ -14,36 +14,57 @@ settings = get_settings()
 # Default processing prompt
 DEFAULT_PROMPT = """Eres un analista editorial experto. Analiza la siguiente noticia y genera un registro estructurado en formato JSON.
 
-REGLAS DE CLASIFICACIÓN DE SECTOR (MUY IMPORTANTE):
+REGLAS DE CLASIFICACIÓN DE SECTOR (PRIORIDAD: si no estás seguro, usa AGENDA):
 
-- AGENDA: CASI TODAS LAS NOTICIAS. Incluye: política, diplomacia, guerras, conflictos, declaraciones de líderes, organismos internacionales (ONU, FMI), justicia, legislativas, regulaciones, protestas, sindicatos, deportes, cultura, entretenimiento, tecnología, medios, religión, justicia, investigaciones, arrestos, sepakbola, básquet, tenis, NFL, NBA, UEFA, FIFA, festivales, cine, streaming (Netflix, Disney+, etc.), arte, música, salud pública, farmacéutica, regulatory agencies (FDA, EMA), elecciones, campañas, votaciones, desastres naturales, accidentes, crímenes, terrorismo, ciberseguridad.
+SECTOR = INDUSTRIAL SOLO SI habla de:
+- Planta/fábrica específica de manufacturing (acero, cemento, vidrio, automotriz, etc.)
+- Línea de producción parada o iniciada
+- Incendio/accidente EN UNA FÁBRICA
+- NO: accidentes de tránsito, protestas, deportes, entretenimiento, arrests, empresas en general
 
-- FINANZAS: SOLO mercados financieros: индексы bursátiles (S&P 500, Dow, Nasdaq, Bovespa, Merval), tipo de cambio (dólar/euro/yen), tasas de interés del banco central, inflación,货币政策, resultados trimestrales de empresas (si habla de ganancias/pérdidas en bolsa), hedge funds, venture capital, IPOs, ofertas públicas.
+SECTOR = AGENDA PARA CASI TODO LO DEMÁS, incluyendo:
+- Deportes (cualquier deporte: fútbol, tenis, NBA, NFL, FIFA, UFC, ciclismo, athletics)
+- Streaming/entretenimiento (Netflix, Disney+, HBO, Paramount+, Scooby-Doo, Avatar, series, películas)
+- Tecnología (Apple, Google, Microsoft, IA, apps, acuerdos tech)
+- News políticas, diplomáticas, guerras, conflictos
+- Justicia (juicios, arrests, crímenes, sobornos)
+- Protestas, manifestaciones (incluso contra empresas)
+- Fusiones empresariales (Warner-Paramount, Apple-Google)
+- Salud pública (FDA批准, approve drugs, disease outbreaks)
+- Transporte (trenes, aviones, accidentes de tránsito - NO en fábricas)
+- Obituarios (falleció X)
+- Realeza, bodas reales
+- Arte, cultura, festivales, premios
 
-- INDUSTRIAL: SOLO producción manufacturera pesada: fábricas de autos, plantas siderúrgicas, astilleros, refineries, chemical plants, production lines, assembly lines, manufacturing. NOTA: Empresas de tecnología que NO producen bienes físicos → van a AGENDA.
+SECTOR = FINANZAS SOLO SI habla de:
+- Índices bursátiles (S&P 500, Dow, Nasdaq, Merval, Bovespa)
+- Tipo de cambio (dólar, euro, yen)
+- Tasas de interés de banco central
+- Ganancias/pérdidas en bolsa
 
-- ENERGÍA: Petróleo, gas, electricidad, nuclear, renewables, empresas energéticas (BP, Shell, Exxon, YPF, Chevron).
+SECTOR = ENERGÍA: Empresas energéticas, petróleo, gas, electricidad
+SECTOR = AGRO: Campo, granos, soja, trigo, ganado
+SECTOR = TRABAJADORES: Sindicatos, huelgas, salario
 
-- AGRO: Campo, agriculture, ganadería, cereales, soja, trigo, maíz, granos, exportaciones agrícolas.
+ÓRBITA: POLÍTICA si hay gobierno/político, ECONOMÍA si hay actor privado, ESTRATEGIA si hay FFAA/medios
+GÉNERO: nota u opinión
+ÁMBITO: provincial, nacional, latinoamericano, internacional
 
-- TRABAJADORES: НП/sindicatos, huelgas laborales, negociaciones salariales, condiciones de trabajo.
+EJEMPLOS QUE DEBEN SER INDUSTRIAL:
+- "Incendio en planta siderúrgica de Ternium"
+- "Fábrica de Toyota paralizó línea de producción"
+- "Vidriera del Potosí sufrió incendio"
 
-REGLAS ADICIONALES:
-1. QUÉ: Describe el acontecimiento principal SIN subjetividad. Solo hechos.
-2. QUIÉN: Actor + cargo. Declaraciones entre comillas.
-3. POR QUÉ: Contexto histórico/anecdótico de la noticia.
-4. DATOS: Números relevantes.
-5. TÍTULO: Verbo en pasado + sujeto + predicado.
-6. TAGS: Actores mencionados separados por comas.
-7. ÓRBITA: POLÍTICA si hay government/político, ECONOMÍA si hay actor privado, ESTRATEGIA si hay FFAA/inteligencia.
-8. GÉNERO: "nota" o "opinión".
-9. ÁMBITO: provincial, nacional, latinoamericano, internacional.
-10. REGIÓN: Solo para provincial o latinoamericano.
-11. RELEVANTE: true si hay actor + acción, false si no.
+EJEMPLOS QUE DEBEN SER AGENDA:
+- "Netflix inició grabaciones de nueva serie"
+- "Yareli Acevedo ganó plata en ciclismo"
+- "Policía arrestó a sospechoso de crimen"
+- "Manifestantes protestaron frente a Warner Bros"
+- "Apple lanzó nuevo producto"
+- "S&P 500 cerró en máximos" → FINANZAS
+- "Conductora arrolló Lamborghini" → AGENDA
 
-Si hay MÚLTIPLES acciones diferenciadas, genera un registro por cada una.
-
-Responde SOLO con JSON válido. Formato:
+Responde SOLO con JSON válido:
 {
   "relevante": true/false,
   "motivo_no_relevante": "...",

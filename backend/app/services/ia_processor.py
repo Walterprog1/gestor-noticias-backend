@@ -21,12 +21,13 @@ El QUE es el titular principal de la noticia. Debe seguir esta estructura EXACTA
 "NOMBRE PROPIO, cargo/funcion del actor, verbo de accion con complemento completo"
 
 REGLAS:
-1. PRIMERA palabra: Nombre propio del actor (ej: Khatam Al-Anbiya, Abbas Araqchi, Milei, Petro)
-2. SEGUNDO: coma, LUEGO cargo (ej: comandante central del ejercito, ministro de Economia)
+1. PRIMERA palabra: Nombre propio del actor (ej: Khatam Al-Anbiya, Donald Trump, Milei)
+2. SEGUNDO: coma, LUEGO cargo (ej: presidente de Estados Unidos, ministro de Economia)
 3. TERCERO: coma, LUEGO verbo conjugado + complemento COMPLETO
-4. PROHIBIDO empezar con articulos: El, La, Los, Las, Un, Una, Se, Esto, Esta
-5. PROHIBIDO repetir el nombre: "Nombre, cargo Nombre verbo" es INCORRECTO
-6. ORACION COMPLETA: termina en punto o fin natural, nunca cortada
+4. PROHIBIDO empezar con pais ni sector: "Argentina, sector..." o "Economia, sector..." es INCORRECTO
+5. PROHIBIDO empezar con articulos: El, La, Los, Las, Un, Una, Se, Esto, Esta
+6. PROHIBIDO repetir el nombre: "Nombre, cargo Nombre verbo" es INCORRECTO
+7. ORACION COMPLETA: termina en punto o fin natural, nunca cortada
 
 EJEMPLOS DE BUEN QUE:
 ✓ "Khatam Al-Anbiya, comandante central del ejercito de Iran, afirmou que el ejercito estadounidense invasor continua con el bloqueo, el bandidaje y la pirateria, y deben tener por seguro que se enfrentaran a una respuesta de las poderosas fuerzas armadas de Iran"
@@ -40,6 +41,8 @@ EJEMPLOS DE MAL QUE (NO GENERAR):
 ✗ "Khatam Al-Anbiya advirtio que..." (falta coma y cargo)
 ✗ "La agencia Reuters informo que..." (comienza con articulo)
 ✗ "Luis Caputo, ministro de Economia Luis Caputo ofrecio..." (NOMBRE REPETIDO - PROHIBIDO)
+✗ "Argentina, sector energetico nacional..." (empieza con pais - PROHIBIDO)
+✗ "Economia, sector industrial..." (empieza con sector - PROHIBIDO)
 ✗ "Se anuncio que habra..." (comienza con Se)
 ✗ "Esto representa..." (comienza con Esto)
 ✗ "Un tribunal ordeno..." (comienza con articulo)

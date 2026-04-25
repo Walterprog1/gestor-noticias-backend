@@ -361,22 +361,36 @@ REGEX_ARTICULOS = re.compile(r"^(el|la|los|las|un|una|se|esto|esta)\s+", re.IGNO
 
 
 async def _corregir_que(que: str, quien: str, texto: str) -> str:
-    """Corrige un QUE que empieza con artículo."""
+    """Corrige un QUE que empieza con artículo - versión agresiva."""
     logger.info(f"[CORRECCION] Iniciando con QUE: {que[:50]}...")
-    logger.info(f"[CORRECCION] QUIEN: {quien[:50] if quien else 'N/A'}...")
-    logger.info(f"[CORRECCION] Texto largo: {len(texto) if texto else 0} caracteres")
     
-    prompt = CORRECTION_PROMPT.format(que=que, quien=quien, texto=texto[:3000] if texto else "")
+    if quien and "," in quien:
+        nombre = quien.split(",")[0].strip()
+    else:
+        nombre = quien.split()[0] if quien else ""
+    
+    if nombre and len(nombre) > 2:
+        corregido = f"{nombre}, {que[4:]}"
+        logger.info(f"[CORRECCION] Corregido simple: {corregido[:80]}...")
+        if not _que_tiene_problema(corregido):
+            return corregido
+    
+    prompt = CORRECTION_PROMPT.format(que=que, quien=quien, texto=texto[:2000] if texto else "")
     result = await call_llm(prompt)
     
     if result:
-        result = result.strip().strip('"').strip("'")
-        logger.info(f"[CORRECCION] Resultado: {result[:100] if result else 'None'}...")
+        result = result.strip().strip('"').strip("'").strip()
+        logger.info(f"[CORRECCION] Resultado IA: {result[:80] if result else 'None'}...")
+        
         if result and not _que_tiene_problema(result):
             return result
-        else:
-            logger.info(f"[CORRECCION] Descartado - sigue con problema o vacio")
-    else:
-        logger.warning(f"[CORRECCION] call_llm devolvio None")
+        elif result:
+            resultado_limpio = result.split("\n")[0].strip()
+            if not _que_tiene_problema(resultado_limpio):
+                logger.info(f"[CORRECCION] Usando primera linea: {resultado_limpio[:80]}")
+                return resultado_limpio
+    
+    if nombre:
+        return f"{nombre}, {que[4:]}"
     
     return que

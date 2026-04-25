@@ -352,9 +352,14 @@ Devuelve SOLO el QUE corregido, sin comillas, sin puntos finales, sin explicacio
 
 def _que_tiene_problema(que: str) -> bool:
     """Check if QUE starts with an article instead of an actor."""
+    logger.info(f"[DEBUG] _que_tiene_problema evaluando: '{que[:30]}...'")
     if not que:
+        logger.info(f"[DEBUG] QUE vacio - return True")
         return True
-    return bool(REGEX_ARTICULOS.match(que.lower()))
+    que_lower = que.lower()
+    match = REGEX_ARTICULOS.match(que_lower)
+    logger.info(f"[DEBUG] Regex match result: {match}")
+    return bool(match)
 
 
 REGEX_ARTICULOS = re.compile(r"^(el|la|los|las|un|una|se|esto|esta)\s+", re.IGNORECASE)

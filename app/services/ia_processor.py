@@ -34,14 +34,19 @@ SECTOR = AGENDA en estos casos:
 - EVEN si la noticia habla de incendios, accidentes, deportes, etc., si hay una INSTITUCIÓN/GOBIERNO actuando → AGENDA
 
 EJEMPLOS:
-✓ "Secretaría emitió recomendaciones tras incendio" → AGENDA
+✓ "Secretaría emitió recomendaciones" → AGENDA
 ✓ "Gobierno anunció medida" → AGENDA
-✓ "Congreso aprovou ley" → AGENDA
+✓ "El Banco Central reportó que la morosidad creció" → FINANZAS
+✓ "El Congreso aprobó ley" → AGENDA
 ✓ "Incendio en fábrica" → INDUSTRIAL
 ✓ "S&P 500 cayó 2%" → FINANZAS
-✗ "Netflix lanzó serie" → AGENDA
-✗ "Jugador marcó gol" → AGENDA
-✗ "Arrestaron a sospechoso" → AGENDA
+
+"El campo QUE siempre debe comenzar con un ACTOR que genera la acción."
+
+El campo "QUE" siempre debe incluir el ACTOR responsable de la acción:
+- "El [ACTOR] reportó/comunicó/anunció que..."
+- Estructura: [ACTOR] + [VERBO] + [ACCIÓN]
+- NUNCA empezar con "Se...", "La...", "Los..." sin actor claro
 
 Responde JSON:
 {"relevante":true,"registros":[{"que":"...","quien":"...","porque":"...","datos":"...","titulo":"...","tags":"...","sector":"AGENDA|INDUSTRIAL|AGRO|ENERGÍA|FINANZAS|TRABAJADORES","orbita":"POLÍTICA|ECONOMÍA|ESTRATEGIA","genero":"nota","ambito":"internacional","region":""}]}

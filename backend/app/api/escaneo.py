@@ -158,10 +158,9 @@ def delete_articulo(
 
 @router.post("/reset-todo")
 def reset_todo(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("administrador"))
+    db: Session = Depends(get_db)
 ):
-    """BORRAR TODOS los artículos y registros. Reset completo."""
+    """BORRAR TODOS los artículos y registros. Reset completo - PUBLICO."""
     from app.models.articulo import Articulo
     from app.models.registro import Registro
     
@@ -184,10 +183,9 @@ def reset_todo(
 
 @router.post("/reset-articulos")
 def reset_articulos(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
-    """BORRAR TODOS los artículos."""
+    """BORRAR TODOS los artículos - PUBLICO."""
     from app.models.articulo import Articulo
     
     # Borrar artículos

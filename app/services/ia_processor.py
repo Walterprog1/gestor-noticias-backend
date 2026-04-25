@@ -12,62 +12,53 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 # Default processing prompt
-DEFAULT_PROMPT = """Eres un analista editorial experto. Analiza la siguiente noticia y genera un registro estructurado en formato JSON.
+DEFAULT_PROMPT = """Eres un analista editorial. Clasifica este artículo en el sector correcto.
 
-REGLAS DE CLASIFICACIÓN DE SECTOR (PRIORIDAD: si no estás seguro, usa AGENDA):
+**SECTOR - REGLAS DE ORO:**
 
-SECTOR = INDUSTRIAL SOLO SI habla de:
-- Planta/fábrica específica de manufacturing (acero, cemento, vidrio, automotriz, etc.)
-- Línea de producción parada o iniciada
-- Incendio/accidente EN UNA FÁBRICA
-- NO: accidentes de tránsito, protestas, deportes, entretenimiento, arrests, empresas en general
+INDUSTRIAL = SOLO si el artículo menciona específicamente:
+- Una FÁBRICA de producción/manufacturing (acero, cemento, vidrio, automóviles, electrónica, alimentos procesados, textiles)
+- Un INCENDIO/EXPLOSIÓN en una fábrica
+- Una LÍNEA DE PRODUCCIÓN específica
+- Una PLANTA industrial
 
-SECTOR = AGENDA PARA CASI TODO LO DEMÁS, incluyendo:
-- Deportes (cualquier deporte: fútbol, tenis, NBA, NFL, FIFA, UFC, ciclismo, athletics)
-- Streaming/entretenimiento (Netflix, Disney+, HBO, Paramount+, Scooby-Doo, Avatar, series, películas)
-- Tecnología (Apple, Google, Microsoft, IA, apps, acuerdos tech)
-- News políticas, diplomáticas, guerras, conflictos
-- Justicia (juicios, arrests, crímenes, sobornos)
-- Protestas, manifestaciones (incluso contra empresas)
-- Fusiones empresariales (Warner-Paramount, Apple-Google)
-- Salud pública (FDA批准, approve drugs, disease outbreaks)
-- Transporte (trenes, aviones, accidentes de tránsito - NO en fábricas)
-- Obituarios (falleció X)
-- Realeza, bodas reales
-- Arte, cultura, festivales, premios
+**NO es INDUSTRIAL si:**
+- Es una empresa que vende servicios (Netflix, Apple, Google, bancos, hospitales, schools, universities)
+- Es transporte de personas (trenes de pasajeros, Airlines, coches)
+- Es un accidente de tráfico
+- Es entretenimiento (deportes, series, películas, música)
+- Es justicia/arrests/crímenes
+- Es protestas/manifestaciones
+- Es salud/farmacéutica (aunque FDA apruebe algo)
+- Es tecnología (aunque hable de productos)
 
-SECTOR = FINANZAS SOLO SI habla de:
-- Índices bursátiles (S&P 500, Dow, Nasdaq, Merval, Bovespa)
-- Tipo de cambio (dólar, euro, yen)
-- Tasas de interés de banco central
-- Ganancias/pérdidas en bolsa
+SECTOR = AGENDA para CASI TODO lo demás
 
-SECTOR = ENERGÍA: Empresas energéticas, petróleo, gas, electricidad
-SECTOR = AGRO: Campo, granos, soja, trigo, ganado
-SECTOR = TRABAJADORES: Sindicatos, huelgas, salario
+SECTOR = FINANZAS solo si menciona: índices bursátiles (S&P 500, Dow Jones, Nasdaq, Merval), tipo de cambio (dólar/euro), tasas de interés del banco central
 
-ÓRBITA: POLÍTICA si hay gobierno/político, ECONOMÍA si hay actor privado, ESTRATEGIA si hay FFAA/medios
-GÉNERO: nota u opinión
-ÁMBITO: provincial, nacional, latinoamericano, internacional
+SECTOR = ENERGÍA si menciona: petróleo, gas, electricidad, empresas energéticas (YPF, Shell, Exxon, Chevron)
 
-EJEMPLOS QUE DEBEN SER INDUSTRIAL:
-- "Incendio en planta siderúrgica de Ternium"
-- "Fábrica de Toyota paralizó línea de producción"
-- "Vidriera del Potosí sufrió incendio"
+SECTOR = AGRO si menciona: campo, granos, soja, trigo, cereales, ganadería
 
-EJEMPLOS QUE DEBEN SER AGENDA:
-- "Netflix inició grabaciones de nueva serie"
-- "Yareli Acevedo ganó plata en ciclismo"
-- "Policía arrestó a sospechoso de crimen"
-- "Manifestantes protestaron frente a Warner Bros"
-- "Apple lanzó nuevo producto"
-- "S&P 500 cerró en máximos" → FINANZAS
-- "Conductora arrolló Lamborghini" → AGENDA
+SECTOR = TRABAJADORES si menciona: sindicatos, huelgas, negociaciones salariales
+
+EJEMPLOS:
+- "Incendio en fábrica de cemento" → INDUSTRIAL
+- "Incendio en hospital" → AGENDA
+- "Incendio en almacén" → AGENDA
+- "Netflix lanzó serie" → AGENDA
+- "Apple presentó iPhone" → AGENDA
+- "FDA aprobó medicamento" → AGENDA
+- "Jugador de fútbol marcó gol" → AGENDA
+- "Ciclista ganó carrera" → AGENDA
+- "Arrestaron a sospechoso" → AGENDA
+- "Manifestantes protestaron" → AGENDA
+- "S&P 500 cayó 2%" → FINANZAS
 
 Responde SOLO con JSON válido:
 {
   "relevante": true/false,
-  "motivo_no_relevante": "...",
+  "motivo_no_relevante": "",
   "registros": [
     {
       "que": "...",
@@ -75,12 +66,12 @@ Responde SOLO con JSON válido:
       "porque": "...",
       "datos": "...",
       "titulo": "...",
-      "tags": "actor1, actor2",
+      "tags": "...",
       "sector": "AGENDA|INDUSTRIAL|AGRO|ENERGÍA|FINANZAS|TRABAJADORES",
       "orbita": "POLÍTICA|ECONOMÍA|ESTRATEGIA",
       "genero": "nota|opinión",
       "ambito": "provincial|nacional|latinoamericano|internacional",
-      "region": "..."
+      "region": ""
     }
   ]
 }

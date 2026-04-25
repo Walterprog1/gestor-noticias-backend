@@ -15,25 +15,30 @@ settings = get_settings()
 # Default processing prompt
 DEFAULT_PROMPT = """Eres un analista editorial experto. Analiza la siguiente noticia y genera un registro estructurado en formato JSON.
 
-REGLAS ESTRICTAS PARA EL CAMPO "QUE":
-1. QUE debe empezar OBLIGATORIAMENTE con el actor + CARGO + acción concreta
-2. PRIMERA PALABRA del QUE debe ser un NOMBRE PROPIO o CARGO INSTITUCIONAL, NUNCA un artículo
-3. ESTÁ PROHIBIDO comenzar con: "El", "La", "Los", "Las", "Un", "Una", "Se", "Esto", "Esta"
-4. Usar verbo en pasado o presente según corresponda
-5. Incluir el objeto de la acción (no solo de qué trata)
+FORMATO ESTRICTO PARA EL CAMPO "QUE":
+1. ESTRUCTURA: Actor (nombre propio), cargo, verbo de acción, complemento completo
+   - Formato: "NOMBRE, cargo/función, verbo + complemento"
+   - NUNCA cortar la oración a mitad
+   - La oración debe tener sentido completo
+2. PRIMERA PALABRA: Nombre propio del actor (nunca artículo)
+   - PROHIBIDO: "El", "La", "Los", "Las", "Un", "Una", "Se", "Esto"
+3. EL VERBO DEBE SER LA ÚLTIMA PALABRA e incluir el complemento completo
+   - NO terminar con "si...", "que...", "de...", etc.
 
 EJEMPLOS DE BUEN QUE (correctos):
-✓ "El comandante Khatam Al-Anbiya advirtió que responder%C3%A1n si EE.UU. mantiene el bloqueo"
-✓ "El chancellor Abbas Araqchi entregó en mano una lista de respuestas a Estados Unidos"
-✓ "El Banco Central subió la tasa de referencia al 35%"
-✓ "El Congreso argentino aprobó la ley de reforma laboral"
+✓ "Khatam Al-Anbiya, comandante central del ejército de Iran, afirmó que el ejército estadounidense invasor continúa con el bloqueo, el bandidaje y la piratería en la región, y deben tener por seguro que se enfrentarán a una respuesta de las poderosas fuerzas armadas de Iran"
+✓ "Abbas Araqchi, ministro de Exteriores de Iran, entregó en mano al jefe del Ejército de Pakistán una lista con las respuestas de Iran a las propuestas de Estados Unidos"
+✓ "El Banco Central, autoridad monetaria, subió la tasa de referencia al 35%"
+✓ "El Congreso argentino, cámara de diputados, aprobó la ley de reforma laboral con 140 votos a favor"
 
 EJEMPLOS DE MAL QUE (incorrectos - NO USAR):
-✗ "El régimen de Teherán amenazó con responder..." (comienza con art%C3%ADculo "El")
-✗ "La agencia Reuters informó que..." (comienza con art%C3%ADculo "La")
-✗ "Se anunció que habrá nuevas medidas..." (comienza con "Se")
-✗ "Esto representa un cambio histórico..." (comienza con "Esto")
-✗ "Un tribunal ordenó..." (comienza con art%C3%ADculo "Un")
+✗ "El régimen de Teherán amenazó con responder si..." (articulo + oracion cortada)
+✗ "Khatam Al-Anbiya advirtió que..." (falta cargo)
+✗ "La agencia Reuters informó que..." (comienza con articulo)
+✗ "Se anunció que habrá..." (comienza con "Se")
+✗ "Esto representa..." (comienza con "Esto")
+✗ "Un tribunal ordenó..." (comienza con articulo)
+✗ "El comandante Khatam Al-Anbiya protestó que Iran responderá si..." (articulo + oracion incompleta)
 
 SECTORES VÁLIDOS: AGENDA, INDUSTRIAL, AGRO, ENERGÍA, FINANZAS, TRABAJADORES
 

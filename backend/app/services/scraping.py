@@ -14,21 +14,21 @@ logger = logging.getLogger(__name__)
 
 
 def _tiene_contexto_politico(texto: str) -> bool:
-    """Check if article has political context."""
+    """Check if article has political, economic or union context."""
     if not texto:
         return False
-    return bool(RE_POLITICOS.search(texto))
+    return bool(RE_POLITICOS.search(texto)) or bool(RE_ECONOMICOS.search(texto)) or bool(RE_SINDICALES.search(texto))
 
 
 def _tiene_hecho(texto: str) -> bool:
-    """Check if article has HECHO (actor institucional, politico o economico).
+    """Check if article has HECHO (actor institucional, politico, economico o sindical).
     
     Returns True if the article has a relevant actor that justifies loading.
     Returns False if it's just an event/news without a relevant actor.
     """
     if not texto:
         return False
-    return bool(RE_POLITICOS.search(texto))
+    return bool(RE_POLITICOS.search(texto)) or bool(RE_ECONOMICOS.search(texto)) or bool(RE_SINDICALES.search(texto))
 
 
 def _es_seccion_excluida(url: str) -> bool:
@@ -99,6 +99,28 @@ PATRONES_ACTORES_POLITICOS = [
 ]
 
 RE_POLITICOS = re.compile("|".join(PATRONES_ACTORES_POLITICOS), re.IGNORECASE)
+
+PATRONES_ACTORES_ECONOMICOS = [
+    r"\bYPF\b", r"\bShell\b", r"\bExxon\b", r"\bTenaris\b", r"\bTernium\b",
+    r"\bBanco\s*(?:de\s*la\s*Nación|Santander|Provincia|Galicia|HSBC|BBVA|Citibank)\b",
+    r"\bFord\b", r"\bVolkswagen\b", r"\bToyota\b", r"\bGeneral\s*Motors\b", r"\bFiat\b",
+    r"\bArcor\b", r"\bMolinos\b", r"\bCoca-Cola\b", r"\bPepsi\b",
+    r"\bAES\b", r"\bEdenor\b", r"\bEdesur\b", r"\bCammesa\b",
+    r"\bVaca\s*Muerta\b", r"\bpuerto\s*de\s*[A-Z]\w+\b", r"\bexportaciones?\b.*\bgranos\b",
+    r"\bBolsa\b.*\bValores\b", r"\bMerval\b", r"\bBCRA\b", r"\bBanco\s*Central\b",
+    r"\bfábrica\b", r"\bplanta\b.*\bindustrial\b", r"\bcomplejo\s*agroindustrial\b",
+    r"\bminera\b", r"\bminería\b", r"\blitio\b", r"\bcobre\b",
+]
+
+PATRONES_ACTORES_SINDICALES = [
+    r"\bCGT\b", r"\bCTA\b", r"\bCamioneros\b", r"\bUOM\b", r"\bSMATA\b",
+    r"\bsindicato\b", r"\bgremio\b", r"\bgremial\b", r"\bparitaria\b",
+    r"\bhuelga\b", r"\bparo\b", r"\bconvenio\s*colectivo\b",
+    r"\bconflicto\s*laboral\b", r"\bnegociación\s*salarial\b",
+]
+
+RE_ECONOMICOS = re.compile("|".join(PATRONES_ACTORES_ECONOMICOS), re.IGNORECASE)
+RE_SINDICALES = re.compile("|".join(PATRONES_ACTORES_SINDICALES), re.IGNORECASE)
 
 
 async def fetch_page_content(url: str, wait_ms: int = 2000) -> Optional[str]:

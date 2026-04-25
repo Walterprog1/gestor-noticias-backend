@@ -43,7 +43,7 @@ def _es_seccion_excluida(url: str) -> bool:
 def _es_seccion_deportes(url: str) -> bool:
     """Check if URL is from sports section - always filter."""
     url_lower = url.lower()
-    return "/deportes/" in url_lower or "/deporte/" in url_lower or "/sports/" in url_lower
+    return "/deportes/" in url_lower or "/deporte/" in url_lower or "/sports/" in url_lower or "/futbol/" in url_lower or "/futbol/" in url_lower
 
 
 def _debe_filtrar_articulo(url: str, texto: str = "") -> bool:

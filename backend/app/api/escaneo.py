@@ -185,9 +185,9 @@ def reset_todo(
 @router.post("/reset-articulos")
 def reset_articulos(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("administrador"))
+    current_user: User = Depends(get_current_user)
 ):
-    """BORRAR SOLO artículos (no registros)."""
+    """BORRAR TODOS los artículos."""
     from app.models.articulo import Articulo
     
     # Borrar artículos

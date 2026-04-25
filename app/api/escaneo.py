@@ -156,7 +156,7 @@ def delete_articulo(
     return {"message": f"Artículo {articulo_id} eliminado"}
 
 
-@router.delete("/reset-todo")
+@router.post("/reset-todo")
 def reset_todo(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("administrador"))
@@ -170,6 +170,7 @@ def reset_todo(
     count_regs = len(regs)
     for r in regs:
         db.delete(r)
+    db.commit()
     
     # Borrar artículos
     arts = db.query(Articulo).all()

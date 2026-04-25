@@ -156,18 +156,29 @@ def delete_articulo(
     return {"message": f"Artículo {articulo_id} eliminado"}
 
 
-@router.delete("/articulos-error")
-def delete_all_error_articulos(
+@router.delete("/reset-todo")
+def reset_todo(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("administrador"))
 ):
-    """Delete all articles with estado=error."""
-    articulos = db.query(Articulo).filter(Articulo.estado == "error").all()
-    count = len(articulos)
-    for a in articulos:
+    """BORRAR TODOS los artículos y registros. Reset completo."""
+    from app.models.articulo import Articulo
+    from app.models.registro import Registro
+    
+    # Borrar registros primero (por foreign key)
+    regs = db.query(Registro).all()
+    count_regs = len(regs)
+    for r in regs:
+        db.delete(r)
+    
+    # Borrar artículos
+    arts = db.query(Articulo).all()
+    count_arts = len(arts)
+    for a in arts:
         db.delete(a)
+    
     db.commit()
-    return {"message": f"{count} artículos eliminados"}
+    return {"message": f"Reset completo: {count_arts} artículos y {count_regs} registros eliminados"}
 
 
 @router.get("/status")

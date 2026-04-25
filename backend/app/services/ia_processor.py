@@ -4,6 +4,7 @@ Soporta: Anthropic Claude, OpenAI GPT, y modo mock para desarrollo sin API key.
 """
 import json
 import logging
+import re
 from datetime import datetime, timezone
 from typing import Optional
 from app.core.config import get_settings
@@ -14,22 +15,25 @@ settings = get_settings()
 # Default processing prompt
 DEFAULT_PROMPT = """Eres un analista editorial experto. Analiza la siguiente noticia y genera un registro estructurado en formato JSON.
 
-REGLAS IMPORTANTES PARA EL CAMPO "QUE":
-1. QUE debe empezar SIEMPRE con el actor principal + acción concreta + complemento
-2. El actor debe ser el primer elemento (NO comenzar con "El article", "La noticia", etc.)
-3. Usar verbo en pasado o presente según corresponda
-4. Incluir el objeto de la acción (no solo de qué trata)
+REGLAS ESTRICTAS PARA EL CAMPO "QUE":
+1. QUE debe empezar OBLIGATORIAMENTE con el actor + CARGO + acción concreta
+2. PRIMERA PALABRA del QUE debe ser un NOMBRE PROPIO o CARGO INSTITUCIONAL, NUNCA un artículo
+3. ESTÁ PROHIBIDO comenzar con: "El", "La", "Los", "Las", "Un", "Una", "Se", "Esto", "Esta"
+4. Usar verbo en pasado o presente según corresponda
+5. Incluir el objeto de la acción (no solo de qué trata)
 
-EJEMPLOS DE BUEN QUE:
-✓ "El canciller Pablo Quirno ofreció reanudar negociaciones bilaterales con Reino Unido sobre Malvinas"
+EJEMPLOS DE BUEN QUE (correctos):
+✓ "El comandante Khatam Al-Anbiya advirtió que responder%C3%A1n si EE.UU. mantiene el bloqueo"
+✓ "El chancellor Abbas Araqchi entregó en mano una lista de respuestas a Estados Unidos"
 ✓ "El Banco Central subió la tasa de referencia al 35%"
-✓ "El Congreso aprobó la ley de reforma laboral"
-✓ "El Ministerio de Economía anunció un nuevo plan de pagos"
+✓ "El Congreso argentino aprobó la ley de reforma laboral"
 
-EJEMPLOS DE MAL QUE (evitar):
-✗ "El Gobierno argentino respondió al Reino Unido..." (genérico, sin acción clara)
-✗ "La noticia trata sobre..." (no dice qué pasó)
-✗ "Se anunció que..." (quién no dice quién)
+EJEMPLOS DE MAL QUE (incorrectos - NO USAR):
+✗ "El régimen de Teherán amenazó con responder..." (comienza con art%C3%ADculo "El")
+✗ "La agencia Reuters informó que..." (comienza con art%C3%ADculo "La")
+✗ "Se anunció que habrá nuevas medidas..." (comienza con "Se")
+✗ "Esto representa un cambio histórico..." (comienza con "Esto")
+✗ "Un tribunal ordenó..." (comienza con art%C3%ADculo "Un")
 
 SECTORES VÁLIDOS: AGENDA, INDUSTRIAL, AGRO, ENERGÍA, FINANZAS, TRABAJADORES
 
@@ -108,12 +112,26 @@ async def process_article(articulo, db):
     registros_data = data.get("registros", [data] if "que" in data else [])
 
     for reg_data in registros_data:
+        que_original = reg_data.get("que", "")
+        quien_original = reg_data.get("quien", "")
+        
+        if _que_tiene_problema(que_original):
+            logger.info(f"QUE con problema detectado, intentando corregir: {que_original[:50]}...")
+            que_corregido = await _corregir_que(que_original, quien_original, articulo.texto_crudo or "")
+            if que_corregido != que_original:
+                logger.info(f"QUE corregido: {que_corregido[:80]}...")
+                que_final = que_corregido
+            else:
+                que_final = que_original
+        else:
+            que_final = que_original
+        
         registro = Registro(
             articulo_id=articulo.id,
             fuente=articulo.nombre_medio or "Desconocida",
             fecha=articulo.fecha_publicacion or datetime.now(timezone.utc),
             link=articulo.url,
-            que=reg_data.get("que", ""),
+            que=que_final,
             que_origen="ia",
             quien=reg_data.get("quien", ""),
             quien_origen="ia",
@@ -298,3 +316,41 @@ async def _call_openai(prompt: str) -> Optional[str]:
         LAST_IA_ERROR = f"Error general en _call_openai: {str(e)}"
         logger.error(LAST_IA_ERROR)
         return None
+
+
+ARTICULOS_INICIALES = ("el", "la", "los", "las", "un", "una", "se", "esto", "esta")
+ARTICULOS_INICIALES_REG = r"^(el|la|los|las|un|una|se|esto|esta)\s+"
+
+CORRECTION_PROMPT = """Corrige el campo "que" de un registro editorial siguiendo estas reglas:
+
+1. El QUE debe empezar OBLIGATORIAMENTE con actor + CARGO + acción
+2. PRIMERA PALABRA: nombre propio o cargo institucional (nunca artículo)
+3. PROHIBIDO: "El", "La", "Los", "Las", "Un", "Una", "Se", "Esto"
+
+QUE actual: "{que}"
+QUIÉN del registro: "{quien}"
+Texto del artículo: "{texto}"
+
+Devuelve SOLO el QUE corregido, sin comillas ni explicación adicional.
+"""
+
+
+def _que_tiene_problema(que: str) -> bool:
+    """Check if QUE starts with an article instead of an actor."""
+    if not que:
+        return True
+    return bool(REGEX_ARTICULOS.match(que.lower()))
+
+
+REGEX_ARTICULOS = re.compile(r"^(el|la|los|las|un|una|se|esto|esta)\s+", re.IGNORECASE)
+
+
+async def _corregir_que(que: str, quien: str, texto: str) -> str:
+    """Corrige un QUE que empieza con artículo."""
+    prompt = CORRECTION_PROMPT.format(que=que, quien=quien, texto=texto[:3000])
+    result = await call_llm(prompt)
+    if result:
+        result = result.strip().strip('"').strip("'")
+        if result and not _que_tiene_problema(result):
+            return result
+    return que

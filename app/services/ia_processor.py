@@ -20,30 +20,28 @@ CASI TODAS LAS NOTICIAS SON AGENDA.
 
 SOLO usa INDUSTRIAL si la noticia menciona literalmente la palabra "fábrica" o "planta" de manufacturing.
 
-EJEMPLOS DE INDUSTRIAL (el único sector raro):
-✓ "Incendio en fábrica de cemento"
-✓ "Fábrica textil cerró"
-✓ "Línea de producción de Toyota"
+SOLO usa ENERGÍA si menciona empresas energéticas (YPF, Shell, Exxon) o recursos (petróleo, gas, electricidad).
+SOLO usa AGRO si menciona campo, granos, soja, trigo, ganadería.
+SOLO usa FINANZAS si menciona índices bursátiles, tipo de cambio, tasas del banco central.
+SOLO usa TRABAJADORES si menciona sindicatos, huelgas, convenios.
 
-EJEMPLOS DE LO QUE NO ES INDUSTRIAL (siempre AGENDA):
-✗ "Netflix" = AGENDA
-✗ "FDA aprobó" = AGENDA
-✗ "Apple-Google" = AGENDA
-✗ "Deportista ganó" = AGENDA
-✗ "Arrestaron a alguien" = AGENDA
-✗ "Policía" = AGENDA
-✗ "Protesta" = AGENDA
-✗ "Brightline tren" = AGENDA
-✗ "Hospital" = AGENDA
-✗ "Falleció" = AGENDA
-✗ "Cine/película" = AGENDA
-✗ "Serie/streaming" = AGENDA
-✗ "Acuerdo empresas" = AGENDA
+SECTOR = AGENDA en estos casos:
+- Noticia sobre gobierno/institución/secretaría/emisor oficial que emitió algo
+- Cualquier actor político (presidente, ministro, diputado, alcalde, funcionario)
+- Organismos públicos (ONU, FMI, Banco Mundial, agencia gubernamental)
+- Decretos, leyes, regulaciones, judiciales
+- Conflictos, guerras, diplomacia
+- EVEN si la noticia habla de incendios, accidentes, deportes, etc., si hay una INSTITUCIÓN/GOBIERNO actuando → AGENDA
 
-FINANZAS: solo si menciona "bolsa", "acciones", "dólar/euro", "banco central subio/bajó tasas"
-ENERGÍA: solo petróleo, gas, electricidad
-AGRO: campo, granos, soja
-TRABAJADORES: sindicatos, huelga
+EJEMPLOS:
+✓ "Secretaría emitió recomendaciones tras incendio" → AGENDA
+✓ "Gobierno anunció medida" → AGENDA
+✓ "Congreso aprovou ley" → AGENDA
+✓ "Incendio en fábrica" → INDUSTRIAL
+✓ "S&P 500 cayó 2%" → FINANZAS
+✗ "Netflix lanzó serie" → AGENDA
+✗ "Jugador marcó gol" → AGENDA
+✗ "Arrestaron a sospechoso" → AGENDA
 
 Responde JSON:
 {"relevante":true,"registros":[{"que":"...","quien":"...","porque":"...","datos":"...","titulo":"...","tags":"...","sector":"AGENDA|INDUSTRIAL|AGRO|ENERGÍA|FINANZAS|TRABAJADORES","orbita":"POLÍTICA|ECONOMÍA|ESTRATEGIA","genero":"nota","ambito":"internacional","region":""}]}

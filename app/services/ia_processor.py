@@ -16,6 +16,8 @@ DEFAULT_PROMPT = """Clasifica esta noticia en un sector.
 
 SECTORES VÁLIDOS: AGENDA, INDUSTRIAL, AGRO, ENERGÍA, FINANZAS, TRABAJADORES
 
+IMPORTANTE: SOLO usa estos 6 sectores. NO inventes otros como SALUD, AGEND, etc.
+
 CASI TODAS LAS NOTICIAS SON AGENDA.
 
 SOLO usa INDUSTRIAL si la noticia menciona literalmente la palabra "fábrica" o "planta" de manufacturing.
@@ -39,14 +41,19 @@ EJEMPLOS:
 ✓ "El Banco Central reportó que la morosidad creció" → FINANZAS
 ✓ "El Congreso aprobó ley" → AGENDA
 ✓ "Incendio en fábrica" → INDUSTRIAL
+✓ "La planta deYPF informó" → ENERGÍA
 ✓ "S&P 500 cayó 2%" → FINANZAS
 
-"El campo QUE siempre debe comenzar con un ACTOR que genera la acción."
+IMPORTANTE: ONLY use INDUSTRIAL if text has word "fábrica" or "planta industrial".
+FOR ALL OTHER = ALWAYS AGENDA
 
-El campo "QUE" siempre debe incluir el ACTOR responsable de la acción:
-- "El [ACTOR] reportó/comunicó/anunció que..."
-- Estructura: [ACTOR] + [VERBO] + [ACCIÓN]
-- NUNCA empezar con "Se...", "La...", "Los..." sin actor claro
+SOLO USA INDUSTRIAL SI TEXTO TIENE "fábrica" o "planta industrial"
+TODO OTRO = SIEMPRE AGENDA
+
+SECTOR = AGENDA in estos casos:
+- Noticia sobre gobierno/institución/secretaría/emisor oficial que emitió algo
+- Cualquier actor político (presidente, ministro, diputado, alcalde, funcionario)
+- Organismos públicos (ONU, FMI, Banco Mundial, agencia gubernamental)
 
 Responde JSON:
 {"relevante":true,"registros":[{"que":"...","quien":"...","porque":"...","datos":"...","titulo":"...","tags":"...","sector":"AGENDA|INDUSTRIAL|AGRO|ENERGÍA|FINANZAS|TRABAJADORES","orbita":"POLÍTICA|ECONOMÍA|ESTRATEGIA","genero":"nota","ambito":"internacional","region":""}]}

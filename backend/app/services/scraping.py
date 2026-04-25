@@ -40,20 +40,29 @@ def _es_seccion_excluida(url: str) -> bool:
     return False
 
 
+def _es_seccion_deportes(url: str) -> bool:
+    """Check if URL is from sports section - always filter."""
+    url_lower = url.lower()
+    return "/deportes/" in url_lower or "/deporte/" in url_lower or "/sports/" in url_lower
+
+
 def _debe_filtrar_articulo(url: str, texto: str = "") -> bool:
     """Determine if an article should be filtered out.
 
     Returns True if article should be EXCLUDED (no tiene HECHO).
     Returns False if article should be KEPT.
     """
-    # Si es sección excluida y NO tiene contexto político → filtrar
+    # DEPORTES SIEMPRE FILTRAR - no tiene hechos institucionales
+    if _es_seccion_deportes(url):
+        return True
+    
+    # Otras secciones excluidas: verificar contexto político
     if _es_seccion_excluida(url):
-        if not _tiene_contexto_politico(texto):
-            return True
-        return False
+        if _tiene_contexto_politico(texto):
+            return False
+        return True
     
     # PARA TODAS las otras URLs: verificar si tiene HECHO
-    # Si NO tiene actor institucional/político/económico → filtrar
     if not _tiene_hecho(texto):
         return True
     

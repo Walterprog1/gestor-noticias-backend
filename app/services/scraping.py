@@ -51,7 +51,9 @@ SECCIONES_EXCLUIR = [
     "/deportes/", "/deporte/", "/sports/", "/espectaculos/", "/entretenimiento/",
     "/cultura/", "/moda/", "/gastronomia/", "/turismo/", "/viajes/",
     "/tecnologia/", "/tech/", "/videojuegos/", "/gaming/", "/esports/",
-    "/sociedad/", "/vida/", "/tendencias/", "/viral/", "/fama/"
+    "/sociedad/", "/vida/", "/tendencias/", "/viral/", "/fama/",
+    "/policiales/", "/judicial/", "/sucesos/", "/crimenes/",
+    "/accidentes/", "/tragedia/", "/tragedias/", "/incidentes/"
 ]
 
 # Patrones de actores politicos (si aparecen, se mantiene aunque sea seccion excluida)

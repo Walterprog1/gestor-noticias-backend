@@ -246,17 +246,23 @@ async def _async_scan(fuente_id: int):
                 if existing:
                     continue
 
-                # Filter: skip excluded sections without political context
+                # Filter excluded sections (but keep if has political context)
                 if _es_seccion_excluida(link_data["url"]):
-                    logger.debug(f"Skipping excluded section: {link_data['url']}")
-                    continue
-
-                # Fetch article content
-                article_html = await fetch_page_content(link_data["url"])
-                if not article_html:
-                    continue
-
-                content = extract_article_content(article_html, config)
+                    # Fetch first to check context
+                    article_html = await fetch_page_content(link_data["url"])
+                    if not article_html:
+                        continue
+                    content = extract_article_content(article_html, config)
+                    if not _tiene_contexto_politico(content["texto"]):
+                        logger.debug(f"Skipping excluded section without context: {link_data['url']}")
+                        continue
+                    # Has political context → keep it, use this content
+                else:
+                    # Fetch article content
+                    article_html = await fetch_page_content(link_data["url"])
+                    if not article_html:
+                        continue
+                    content = extract_article_content(article_html, config)
 
                 if not content["texto"] or len(content["texto"]) < 100:
                     continue

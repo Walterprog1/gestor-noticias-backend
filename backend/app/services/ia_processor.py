@@ -16,29 +16,31 @@ settings = get_settings()
 DEFAULT_PROMPT = """Eres un analista editorial experto. Analiza la siguiente noticia y genera un registro estructurado en formato JSON.
 
 FORMATO ESTRICTO PARA EL CAMPO "QUE":
-1. ESTRUCTURA: Actor (nombre propio), cargo, verbo de acción, complemento completo
-   - Formato: "NOMBRE, cargo/función, verbo + complemento"
-   - NUNCA cortar la oración a mitad
-   - La oración debe tener sentido completo
-2. PRIMERA PALABRA: Nombre propio del actor (nunca artículo)
-   - PROHIBIDO: "El", "La", "Los", "Las", "Un", "Una", "Se", "Esto"
-3. EL VERBO DEBE SER LA ÚLTIMA PALABRA e incluir el complemento completo
-   - NO terminar con "si...", "que...", "de...", etc.
+El QUE es el titular principal de la noticia. Debe seguir esta estructura EXACTA:
 
-EJEMPLOS DE BUEN QUE (correctos):
-✓ "Khatam Al-Anbiya, comandante central del ejército de Iran, afirmó que el ejército estadounidense invasor continúa con el bloqueo, el bandidaje y la piratería en la región, y deben tener por seguro que se enfrentarán a una respuesta de las poderosas fuerzas armadas de Iran"
-✓ "Abbas Araqchi, ministro de Exteriores de Iran, entregó en mano al jefe del Ejército de Pakistán una lista con las respuestas de Iran a las propuestas de Estados Unidos"
-✓ "El Banco Central, autoridad monetaria, subió la tasa de referencia al 35%"
-✓ "El Congreso argentino, cámara de diputados, aprobó la ley de reforma laboral con 140 votos a favor"
+"NOMBRE PROPIO, cargo/funcion del actor, verbo de accion con complemento completo"
 
-EJEMPLOS DE MAL QUE (incorrectos - NO USAR):
-✗ "El régimen de Teherán amenazó con responder si..." (articulo + oracion cortada)
-✗ "Khatam Al-Anbiya advirtió que..." (falta cargo)
-✗ "La agencia Reuters informó que..." (comienza con articulo)
-✗ "Se anunció que habrá..." (comienza con "Se")
-✗ "Esto representa..." (comienza con "Esto")
-✗ "Un tribunal ordenó..." (comienza con articulo)
-✗ "El comandante Khatam Al-Anbiya protestó que Iran responderá si..." (articulo + oracion incompleta)
+REGLAS:
+1. PRIMERA palabra: Nombre propio del actor (ej: Khatam Al-Anbiya, Abbas Araqchi, Milei, Petro)
+2. SEGUNDO: coma, LUEGO cargo (ej: comandante central del ejercito, ministro de Economia)
+3. TERCERO: coma, LUEGO verbo conjugado + complemento COMPLETO
+4. PROHIBIDO empezar con articulos: El, La, Los, Las, Un, Una, Se, Esto, Esta
+5. ORACION COMPLETA: termina en punto o fin natural, nunca cortada
+
+EJEMPLOS DE BUEN QUE:
+✓ "Khatam Al-Anbiya, comandante central del ejercito de Iran, afirmou que el ejercito estadounidense invasor continua con el bloqueo, el bandidaje y la pirateria, y deben tener por seguro que se enfrentaran a una respuesta de las poderosas fuerzas armadas de Iran"
+✓ "Abbas Araqchi, ministro de Exteriores de Iran, entrego en mano al jefe del Ejercito de Pakistan una lista con las respuestas de Iran a las propuestas de Estados Unidos"
+✓ "El Banco Central, autoridad monetaria argentina, subio la tasa de referencia al 35%"
+✓ "El Congreso argentino, camara de diputados, aprobo la ley de reforma laboral con 140 votos a favor"
+
+EJEMPLOS DE MAL QUE (NO GENERAR):
+✗ "El regimen de Teheran amenazo con responder si..." (articulo + oracion cortada)
+✗ "Khatam Al-Anbiya advirtio que..." (falta coma y cargo)
+✗ "La agencia Reuters informo que..." (comienza con articulo)
+✗ "Se anuncio que habra..." (comienza con Se)
+✗ "Esto representa..." (comienza con Esto)
+✗ "Un tribunal ordeno..." (comienza con articulo)
+✗ "El comandante Khatam Al-Anbiya protesto que Iran respondera si..." (articulo + oracion incompleta)
 
 SECTORES VÁLIDOS: AGENDA, INDUSTRIAL, AGRO, ENERGÍA, FINANZAS, TRABAJADORES
 
@@ -326,18 +328,26 @@ async def _call_openai(prompt: str) -> Optional[str]:
 ARTICULOS_INICIALES = ("el", "la", "los", "las", "un", "una", "se", "esto", "esta")
 ARTICULOS_INICIALES_REG = r"^(el|la|los|las|un|una|se|esto|esta)\s+"
 
-CORRECTION_PROMPT = """Corrige el campo "que" de un registro editorial siguiendo estas reglas:
+CORRECTION_PROMPT = """Eres un editor jefe de noticias. Reescribe el campo QUE siguiendo EXACTAMENTE este formato:
 
-1. El QUE debe empezar OBLIGATORIAMENTE con actor + CARGO + acción
-2. PRIMERA PALABRA: nombre propio o cargo institucional (nunca artículo)
-3. PROHIBIDO: "El", "La", "Los", "Las", "Un", "Una", "Se", "Esto"
+FORMATO: "NOMBRE PROPIO, cargo/funcion del actor, verbo de accion con complemento completo"
+
+REGLAS:
+1. PRIMERA palabra DEBE ser nombre propio (ej: Khatam Al-Anbiya, Abbas Araqchi)
+2. LUEGO una coma, LUEGO el cargo (ej: comandante central del ejercito de Iran)
+3. LUEGO una coma, LUEGO el verbo con todo el complemento
+4. NUNCA empezar con: El, La, Los, Las, Un, Una, Se, Esto
+5. ORACION COMPLETA - no cortar a mitad
+
+EJEMPLO CORRECTO:
+Entrada: "El regimen de Teheran amenazo con responder si..."
+Salida: "Khatam Al-Anbiya, comandante central del ejercito de Iran, advirtio que Iran respondera con sus fuerzas armadas si Estados Unidos mantiene el bloqueo de puertos"
 
 QUE actual: "{que}"
-QUIÉN del registro: "{quien}"
-Texto del artículo: "{texto}"
+QUIEN: "{quien}"
+Contexto del articulo: "{texto}"
 
-Devuelve SOLO el QUE corregido, sin comillas ni explicación adicional.
-"""
+Devuelve SOLO el QUE corregido, sin comillas, sin puntos finales, sin explicaciones."""
 
 
 def _que_tiene_problema(que: str) -> bool:

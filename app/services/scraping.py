@@ -4,12 +4,68 @@ Soporta sitios estáticos (BeautifulSoup) y dinámicos (Playwright).
 """
 import hashlib
 import logging
+import re
 from datetime import datetime, timezone
 from typing import Optional
 from bs4 import BeautifulSoup
 import httpx
 
 logger = logging.getLogger(__name__)
+
+
+def _es_seccion_excluida(url: str) -> bool:
+    """Check if URL belongs to an excluded section."""
+    url_lower = url.lower()
+    for seccion in SECCIONES_EXCLUIR:
+        if seccion in url_lower:
+            return True
+    return False
+
+
+def _tiene_contexto_politico(texto: str) -> bool:
+    """Check if article has political context (keep it even from excluded sections)."""
+    if not texto:
+        return False
+    return bool(RE_POLITICOS.search(texto))
+
+
+def _debe_filtrar_articulo(url: str, texto: str = "") -> bool:
+    """Determine if an article should be filtered out.
+
+    Returns True if article should be EXCLUDED.
+    Returns False if article should be KEPT.
+    """
+    # Si no es sección excluida, mantener
+    if not _es_seccion_excluida(url):
+        return False
+
+    # Si es sección excluida pero tiene actor político, mantener
+    if _tiene_contexto_politico(texto):
+        return False
+
+    # Filtrar
+    return True
+
+# Secciones a filtrar (articulos puros de estas secciones se excluyen)
+SECCIONES_EXCLUIR = [
+    "/deportes/", "/deporte/", "/sports/", "/espectaculos/", "/entretenimiento/",
+    "/cultura/", "/moda/", "/gastronomia/", "/turismo/", "/viajes/",
+    "/tecnologia/", "/tech/", "/videojuegos/", "/gaming/", "/esports/",
+    "/sociedad/", "/vida/", "/tendencias/", "/viral/", "/fama/"
+]
+
+# Patrones de actores politicos (si aparecen, se mantiene aunque sea seccion excluida)
+PATRONES_ACTORES_POLITICOS = [
+    r"\bpresidente\b", r"\bpresidenta\b", r"\bgobierno\b", r"\bministerio\b",
+    r"\bministro\b", r"\bministra\b", r"\bcongreso\b", r"\bsenado\b",
+    r"\bsenador\b", r"\bsenadora\b", r"\bdiputado\b", r"\bdiputada\b",
+    r"\bgovernador\b", r"\bgovernadora\b", r"\balcalde\b", r"\balcaldesa\b",
+    r"\bsecretario\b", r"\bsecretaria\b", r"\bfuncionario\b", r"\bautoridad\b",
+    r"\bcasa rosa\b", r"\bpalacio\b", r"\bcasa de gobierno\b", r"\bnacion\b",
+    r"\bestado\b", r"\bunion\b", r"\bmarco legal\b"
+]
+
+RE_POLITICOS = re.compile("|".join(PATRONES_ACTORES_POLITICOS), re.IGNORECASE)
 
 
 async def fetch_page_content(url: str, wait_ms: int = 2000) -> Optional[str]:
@@ -186,6 +242,11 @@ async def _async_scan(fuente_id: int):
                     Articulo.url_hash == link_data["hash"]
                 ).first()
                 if existing:
+                    continue
+
+                # Filter: skip excluded sections without political context
+                if _es_seccion_excluida(link_data["url"]):
+                    logger.debug(f"Skipping excluded section: {link_data['url']}")
                     continue
 
                 # Fetch article content

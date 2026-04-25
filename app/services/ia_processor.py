@@ -12,75 +12,46 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 # Default processing prompt
-DEFAULT_PROMPT = """Eres un analista editorial. Clasifica este artículo en el sector correcto.
+DEFAULT_PROMPT = """Clasifica esta noticia en un sector.
 
-**SECTOR - REGLAS DE ORO:**
+SECTORES VÁLIDOS: AGENDA, INDUSTRIAL, AGRO, ENERGÍA, FINANZAS, TRABAJADORES
 
-INDUSTRIAL = SOLO si el artículo menciona específicamente:
-- Una FÁBRICA de producción/manufacturing (acero, cemento, vidrio, automóviles, electrónica, alimentos procesados, textiles)
-- Un INCENDIO/EXPLOSIÓN en una fábrica
-- Una LÍNEA DE PRODUCCIÓN específica
-- Una PLANTA industrial
+CASI TODAS LAS NOTICIAS SON AGENDA.
 
-**NO es INDUSTRIAL si:**
-- Es una empresa que vende servicios (Netflix, Apple, Google, bancos, hospitales, schools, universities)
-- Es transporte de personas (trenes de pasajeros, Airlines, coches)
-- Es un accidente de tráfico
-- Es entretenimiento (deportes, series, películas, música)
-- Es justicia/arrests/crímenes
-- Es protestas/manifestaciones
-- Es salud/farmacéutica (aunque FDA apruebe algo)
-- Es tecnología (aunque hable de productos)
+SOLO usa INDUSTRIAL si la noticia menciona literalmente la palabra "fábrica" o "planta" de manufacturing.
 
-SECTOR = AGENDA para CASI TODO lo demás
+EJEMPLOS DE INDUSTRIAL (el único sector raro):
+✓ "Incendio en fábrica de cemento"
+✓ "Fábrica textil cerró"
+✓ "Línea de producción de Toyota"
 
-SECTOR = FINANZAS solo si menciona: índices bursátiles (S&P 500, Dow Jones, Nasdaq, Merval), tipo de cambio (dólar/euro), tasas de interés del banco central
+EJEMPLOS DE LO QUE NO ES INDUSTRIAL (siempre AGENDA):
+✗ "Netflix" = AGENDA
+✗ "FDA aprobó" = AGENDA
+✗ "Apple-Google" = AGENDA
+✗ "Deportista ganó" = AGENDA
+✗ "Arrestaron a alguien" = AGENDA
+✗ "Policía" = AGENDA
+✗ "Protesta" = AGENDA
+✗ "Brightline tren" = AGENDA
+✗ "Hospital" = AGENDA
+✗ "Falleció" = AGENDA
+✗ "Cine/película" = AGENDA
+✗ "Serie/streaming" = AGENDA
+✗ "Acuerdo empresas" = AGENDA
 
-SECTOR = ENERGÍA si menciona: petróleo, gas, electricidad, empresas energéticas (YPF, Shell, Exxon, Chevron)
+FINANZAS: solo si menciona "bolsa", "acciones", "dólar/euro", "banco central subio/bajó tasas"
+ENERGÍA: solo petróleo, gas, electricidad
+AGRO: campo, granos, soja
+TRABAJADORES: sindicatos, huelga
 
-SECTOR = AGRO si menciona: campo, granos, soja, trigo, cereales, ganadería
+Responde JSON:
+{"relevante":true,"registros":[{"que":"...","quien":"...","porque":"...","datos":"...","titulo":"...","tags":"...","sector":"AGENDA|INDUSTRIAL|AGRO|ENERGÍA|FINANZAS|TRABAJADORES","orbita":"POLÍTICA|ECONOMÍA|ESTRATEGIA","genero":"nota","ambito":"internacional","region":""}]}
 
-SECTOR = TRABAJADORES si menciona: sindicatos, huelgas, negociaciones salariales
-
-EJEMPLOS:
-- "Incendio en fábrica de cemento" → INDUSTRIAL
-- "Incendio en hospital" → AGENDA
-- "Incendio en almacén" → AGENDA
-- "Netflix lanzó serie" → AGENDA
-- "Apple presentó iPhone" → AGENDA
-- "FDA aprobó medicamento" → AGENDA
-- "Jugador de fútbol marcó gol" → AGENDA
-- "Ciclista ganó carrera" → AGENDA
-- "Arrestaron a sospechoso" → AGENDA
-- "Manifestantes protestaron" → AGENDA
-- "S&P 500 cayó 2%" → FINANZAS
-
-Responde SOLO con JSON válido:
-{
-  "relevante": true/false,
-  "motivo_no_relevante": "",
-  "registros": [
-    {
-      "que": "...",
-      "quien": "...",
-      "porque": "...",
-      "datos": "...",
-      "titulo": "...",
-      "tags": "...",
-      "sector": "AGENDA|INDUSTRIAL|AGRO|ENERGÍA|FINANZAS|TRABAJADORES",
-      "orbita": "POLÍTICA|ECONOMÍA|ESTRATEGIA",
-      "genero": "nota|opinión",
-      "ambito": "provincial|nacional|latinoamericano|internacional",
-      "region": ""
-    }
-  ]
-}
-
-NOTICIA A ANALIZAR:
+NOTICIA:
 Título: {titulo}
 Fuente: {fuente}
-Texto:
-{texto}
+Texto: {texto}
 """
 
 

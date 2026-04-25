@@ -25,18 +25,21 @@ REGLAS:
 2. SEGUNDO: coma, LUEGO cargo (ej: comandante central del ejercito, ministro de Economia)
 3. TERCERO: coma, LUEGO verbo conjugado + complemento COMPLETO
 4. PROHIBIDO empezar con articulos: El, La, Los, Las, Un, Una, Se, Esto, Esta
-5. ORACION COMPLETA: termina en punto o fin natural, nunca cortada
+5. PROHIBIDO repetir el nombre: "Nombre, cargo Nombre verbo" es INCORRECTO
+6. ORACION COMPLETA: termina en punto o fin natural, nunca cortada
 
 EJEMPLOS DE BUEN QUE:
 ✓ "Khatam Al-Anbiya, comandante central del ejercito de Iran, afirmou que el ejercito estadounidense invasor continua con el bloqueo, el bandidaje y la pirateria, y deben tener por seguro que se enfrentaran a una respuesta de las poderosas fuerzas armadas de Iran"
 ✓ "Abbas Araqchi, ministro de Exteriores de Iran, entrego en mano al jefe del Ejercito de Pakistan una lista con las respuestas de Iran a las propuestas de Estados Unidos"
 ✓ "El Banco Central, autoridad monetaria argentina, subio la tasa de referencia al 35%"
 ✓ "El Congreso argentino, camara de diputados, aprobo la ley de reforma laboral con 140 votos a favor"
+✓ "Luis Caputo, ministro de Economia, ofrecio renovar $7,9 billones en bonos de deuda"
 
 EJEMPLOS DE MAL QUE (NO GENERAR):
 ✗ "El regimen de Teheran amenazo con responder si..." (articulo + oracion cortada)
 ✗ "Khatam Al-Anbiya advirtio que..." (falta coma y cargo)
 ✗ "La agencia Reuters informo que..." (comienza con articulo)
+✗ "Luis Caputo, ministro de Economia Luis Caputo ofrecio..." (NOMBRE REPETIDO - PROHIBIDO)
 ✗ "Se anuncio que habra..." (comienza con Se)
 ✗ "Esto representa..." (comienza con Esto)
 ✗ "Un tribunal ordeno..." (comienza con articulo)

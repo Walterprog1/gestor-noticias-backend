@@ -40,10 +40,13 @@ def _es_seccion_excluida(url: str) -> bool:
     return False
 
 
-def _es_seccion_deportes(url: str) -> bool:
-    """Check if URL is from sports section - always filter."""
+def _es_seccion_siempre_excluida(url: str) -> bool:
+    """Check if URL is from a section that should ALWAYS be excluded."""
     url_lower = url.lower()
-    return "/deportes/" in url_lower or "/deporte/" in url_lower or "/sports/" in url_lower or "/futbol/" in url_lower or "/futbol/" in url_lower
+    for seccion in SECCIONES_EXCLUIDAS_SIEMPRE:
+        if seccion in url_lower:
+            return True
+    return False
 
 
 def _debe_filtrar_articulo(url: str, texto: str = "") -> bool:
@@ -52,14 +55,8 @@ def _debe_filtrar_articulo(url: str, texto: str = "") -> bool:
     Returns True if article should be EXCLUDED (no tiene HECHO).
     Returns False if article should be KEPT.
     """
-    # DEPORTES SIEMPRE FILTRAR - no tiene hechos institucionales
-    if _es_seccion_deportes(url):
-        return True
-    
-    # Otras secciones excluidas: verificar contexto político
-    if _es_seccion_excluida(url):
-        if _tiene_contexto_politico(texto):
-            return False
+    # SIEMPRE FILTRAR secciones de contenido puro sin hechos institucionales
+    if _es_seccion_siempre_excluida(url):
         return True
     
     # PARA TODAS las otras URLs: verificar si tiene HECHO
@@ -68,20 +65,26 @@ def _debe_filtrar_articulo(url: str, texto: str = "") -> bool:
     
     return False
 
-# Secciones a filtrar
+# Secciones que SIEMPRE se filtran (sin excepciones)
+SECCIONES_EXCLUIDAS_SIEMPRE = [
+    # Entretenimiento y cultura
+    "/entretenimiento/", "/cultura/", "/espectaculos/", "/musica/", "/series/",
+    "/peliculas/", "/tv/", "/streaming/", "/netflix/", "/disney/", "/hbo/",
+    # Deportes
+    "/deportes/", "/deporte/", "/sports/", "/futbol/", "/tenis/", "/basquet/",
+    "/boxeo/", "/golf/", "/nba/", "/liga/", "/copa/",
+    # Policiales y judiciales
+    "/policiales/", "/judicial/", "/crimenes/", "/sucesos/",
+    # Moda y lifestyle
+    "/moda/", "/tendencias/", "/viral/", "/fama/",
+]
+
+# Secciones a filtrar (usado por _es_seccion_excluida para otros checks)
 SECCIONES_EXCLUIR = [
-    # Deportes y espectaculos
-    "/deportes/", "/deporte/", "/sports/", "/espectaculos/", "/entretenimiento/",
-    "/cultura/", "/moda/", "/gastronomia/", "/turismo/", "/viajes/",
+    "/sociedad/", "/vida/", "/turismo/", "/viajes/", "/gastronomia/",
     "/tecnologia/", "/tech/", "/videojuegos/", "/gaming/", "/esports/",
-    # Sociedad y tendencias
-    "/sociedad/", "/vida/", "/tendencias/", "/viral/", "/fama/",
-    # Judicial y criminal
-    "/policiales/", "/judicial/", "/sucesos/", "/crimenes/",
-    # Accidentes y salud
     "/accidentes/", "/tragedia/", "/tragedias/", "/incidentes/",
     "/salud/", "/bienestar/", "/medicina/",
-    # Otros no-noticia
     "/tag/", "/tags/",
 ]
 

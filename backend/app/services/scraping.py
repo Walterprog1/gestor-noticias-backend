@@ -73,6 +73,8 @@ SECCIONES_EXCLUIDAS_SIEMPRE = [
     # Deportes
     "/deportes/", "/deporte/", "/sports/", "/futbol/", "/tenis/", "/basquet/",
     "/boxeo/", "/golf/", "/nba/", "/liga/", "/copa/",
+    # Tag de deportes
+    "/tag/deportes-internacional/",
     # Policiales y judiciales
     "/policiales/", "/judicial/", "/crimenes/", "/sucesos/",
     # Moda y lifestyle

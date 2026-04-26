@@ -387,6 +387,12 @@ async def _process_single_article(articulo_id: int, db):
     articulo = db.query(Articulo).filter(Articulo.id == articulo_id).first()
     if not articulo or articulo.estado != "crudo":
         return
+    
+    if _debe_filtrar_articulo(articulo.url, articulo.texto_crudo or ""):
+        articulo.estado = "filtrado"
+        articulo.motivo_no_relevante = "Seccion excluida sin hecho institucional"
+        db.commit()
+        return
 
     await process_article(articulo, db)
 

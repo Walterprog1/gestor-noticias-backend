@@ -380,8 +380,8 @@ async def _async_scan(fuente_id: int):
 
 
 async def _process_single_article(articulo_id: int, db):
-    """Process a single article through filtering and AI."""
-    from app.services.ia_processor import process_article
+    """Process article through filtering and AI analysis."""
+    from app.services.ia_processor import analyze_article
     from app.models.articulo import Articulo
 
     articulo = db.query(Articulo).filter(Articulo.id == articulo_id).first()
@@ -390,11 +390,12 @@ async def _process_single_article(articulo_id: int, db):
     
     if _debe_filtrar_articulo(articulo.url, articulo.texto_crudo or ""):
         articulo.estado = "filtrado"
-        articulo.motivo_no_relevante = "Seccion excluida sin hecho institucional"
+        articulo.motive_no_relevante = "Seccion excluida sin hecho institucional"
         db.commit()
         return
-
-    await process_article(articulo, db)
+    
+    # Now use big-pickle to analyze the article
+    await analyze_article(articulo, db)
 
 
 def extract_and_process_article(articulo_id: int):

@@ -67,11 +67,108 @@ Texto: {texto}
 """
 
 
-async def process_article(articulo, db):
-    """Process a single article through the AI pipeline."""
-    from app.models.articulo import Articulo
+async def analyze_article(articulo, db):
+    """Analyze article using big-pickle through the AI pipeline."""
     from app.models.registro import Registro
     from app.models.prompt import Prompt
+    
+    if not articulo.texto_crudo or len(articulo.texto_crudo) < 50:
+        articulo.estado = "no_relevante"
+        articulo.motivo_no_relevante = "Texto demasiado corto para procesar"
+        db.commit()
+        return
+    
+    # Get active prompt
+    prompt_record = db.query(Prompt).filter(
+        Prompt.activo == True,
+        Prompt.tipo == "procesamiento"
+    ).first()
+    
+    prompt_template = prompt_record.contenido if prompt_record else DEFAULT_PROMPT
+    
+    # Build the prompt
+    prompt_text = prompt_template.replace("{titulo}", articulo.titulo_original or "Sin título")
+    prompt_text = prompt_text.replace("{fuente}", articulo.nombre_medio or "Desconocida")
+    prompt_text = prompt_text.replace("{texto}", articulo.texto_crudo[:8000])
+    
+    # Call LLM (big-pickle)
+    result = await call_llm(prompt_text)
+    
+    if not result:
+        articulo.estado = "error"
+        db.commit()
+        return
+    
+    try:
+        data = json.loads(result)
+    except json.JSONDecodeError:
+        try:
+            start = result.index("{")
+            end = result.rindex("}") + 1
+            data = json.loads(result[start:end])
+        except (ValueError, json.JSONDecodeError):
+            logger.error(f"Invalid JSON response for article {articulo.id}")
+            articulo.estado = "error"
+            db.commit()
+            return
+    
+    # Check relevance
+    if not data.get("relevante", True):
+        articulo.estado = "no_relevante"
+        articulo.motivo_no_relevante = data.get("motivo_no_relevante", "La IA determinó que no es relevante")
+        db.commit()
+        return
+    
+    # Create records
+    registros_data = data.get("registros", [data] if "que" in data else [])
+    
+    for reg_data in registros_data:
+        que_original = reg_data.get("que", "")
+        quien_original = reg_data.get("quien", "")
+        
+        if _que_tiene_problema(que_original):
+            logger.info(f"QUE con problema detectado, intentando corregir: {que_original[:50]}...")
+            que_corregido = await _corregir_que(que_original, quien_original, articulo.texto_crudo or "")
+            if que_corregido != que_original:
+                logger.info(f"QUE corregido: {que_corregido[:80]}...")
+                que_final = que_corregido
+            else:
+                que_final = que_original
+        else:
+            que_final = que_original
+        
+        registro = Registro(
+            articulo_id=articulo.id,
+            fuente=articulo.nombre_medio or "Desconocida",
+            fecha=articulo.fecha_publicacion or datetime.now(timezone.utc),
+            link=articulo.url,
+            que=que_final,
+            que_origen="ia",
+            quien=reg_data.get("quien", ""),
+            quien_origen="ia",
+            porque=reg_data.get("porque", ""),
+            porque_origen="ia",
+            datos=reg_data.get("datos", ""),
+            datos_origen="ia",
+            titulo=reg_data.get("titulo", ""),
+            titulo_origen="ia",
+            tags=reg_data.get("tags", ""),
+            tags_origen="ia",
+            sector=reg_data.get("sector", ""),
+            sector_origen="ia",
+            orbita=reg_data.get("orbita", ""),
+            orbita_origen="ia",
+            genero=reg_data.get("genero", "nota"),
+            ambito=reg_data.get("ambito", "nacional"),
+            region=reg_data.get("region", ""),
+            estado="procesado",
+            correcciones_json=[]
+        )
+        db.add(registro)
+    
+    articulo.estado = "procesado"
+    db.commit()
+    logger.info(f"Article {articulo.id} processed: {len(registros_data)} record(s) created")
 
     if not articulo.texto_crudo or len(articulo.texto_crudo) < 50:
         articulo.estado = "no_relevante"

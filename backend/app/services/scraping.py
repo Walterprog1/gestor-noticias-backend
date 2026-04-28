@@ -415,28 +415,32 @@ async def _extract_and_process(articulo_id: int):
     """Extract content from a manually added link and process it."""
     from app.core.database import SessionLocal
     from app.models.articulo import Articulo
-
+    
     db = SessionLocal()
     try:
         articulo = db.query(Articulo).filter(Articulo.id == articulo_id).first()
         if not articulo:
             return
-
+        
+        # If already processed, skip
+        if articulo.estado != "crudo":
+            return
+        
         # Fetch article
         html = await fetch_page_content(articulo.url)
         if not html:
             articulo.estado = "error"
             db.commit()
             return
-
+        
         content = extract_article_content(html, {})
         articulo.texto_crudo = content["texto"]
         articulo.titulo_original = content["titulo"]
         articulo.fecha_publicacion = content["fecha"]
         db.commit()
-
+        
         # Process through AI
         await _process_single_article(articulo.id, db)
-
+        
     finally:
         db.close()

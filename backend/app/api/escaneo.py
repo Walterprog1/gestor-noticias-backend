@@ -131,8 +131,8 @@ async def add_manual_link(
         
         # Only add task if article is still in "crudo" state
         if articulo.estado == "crudo":
-            from app.services.scraping import extract_and_process_article
-            background_tasks.add_task(extract_and_process_article, articulo.id)
+            from app.services.scraping import _process_single_article
+            background_tasks.add_task(_process_single_article, articulo.id, db)
         
         return {"message": "Link agregado y procesamiento iniciado", "articulo_id": articulo.id}
         

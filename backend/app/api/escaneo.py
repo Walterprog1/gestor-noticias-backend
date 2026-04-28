@@ -129,14 +129,7 @@ async def add_manual_link(
         db.commit()
         db.refresh(articulo)
         
-        # Process directly (not in background)
-        try:
-            from app.services.scraping import _process_single_article
-            await _process_single_article(articulo.id, db)
-        except Exception as e:
-            logger.error(f"Error processing article {articulo.id}: {e}")
-        
-        return {"message": "Link agregado y procesado", "articulo_id": articulo.id}
+        return {"message": "Link agregado en estado 'crudo' para procesamiento por big-pickle", "articulo_id": articulo.id}
         
     except Exception as e:
         # If duplicate, just ignore

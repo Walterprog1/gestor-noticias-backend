@@ -129,12 +129,14 @@ async def add_manual_link(
         db.commit()
         db.refresh(articulo)
         
-        # Only add task if article is still in "crudo" state
-        if articulo.estado == "crudo":
+        # Process directly (not in background)
+        try:
             from app.services.scraping import _process_single_article
-            background_tasks.add_task(_process_single_article, articulo.id, db)
+            await _process_single_article(articulo.id, db)
+        except Exception as e:
+            logger.error(f"Error processing article {articulo.id}: {e}")
         
-        return {"message": "Link agregado y procesamiento iniciado", "articulo_id": articulo.id}
+        return {"message": "Link agregado y procesado", "articulo_id": articulo.id}
         
     except Exception as e:
         # If duplicate, just ignore

@@ -357,7 +357,7 @@ async def _async_scan(fuente_id: int):
 
         logger.info(f"Scan complete for '{fuente.nombre}': {total_new} new articles")
         
-        # Process new articles through AI
+        # Process new articles through AI directly
         new_articles = db.query(Articulo).filter(
             Articulo.fuente_id == fuente.id,
             Articulo.estado == "crudo"

@@ -108,8 +108,11 @@ async def analyze_article(articulo, db):
         db.commit()
         return
     
-    # Crear registros
+    # Crear registros - FORZAR 1 solo por artículo (tomar el primero)
     registros_data = data.get("registros", [data] if "que" in data else [])
+    # Si hay múltiples, tomar solo el primero
+    if isinstance(registros_data, list) and len(registros_data) > 1:
+        registros_data = [registros_data[0]]
     
     for reg_data in registros_data:
         que_original = reg_data.get("que", "")

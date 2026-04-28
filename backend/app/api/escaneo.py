@@ -109,34 +109,37 @@ async def add_manual_link(
     if data.fuente_id:
         fuente = db.query(Fuente).filter(Fuente.id == data.fuente_id).first()
     
-    # Check again for race conditions
-    existing = db.query(Articulo).filter(
-        (Articulo.url == data.url) | (Articulo.url_hash == url_hash)
-    ).first()
-    if existing:
+    # Check if URL already exists
+    url_hash = hashlib.sha256(data.url.encode()).hexdigest()
+    
+    # Try to insert, ignore if duplicate
+    try:
+        fuente = None
+        if data.fuente_id:
+            fuente = db.query(Fuente).filter(Fuente.id == data.fuente_id).first()
+        
+        articulo = Articulo(
+            fuente_id=data.fuente_id,
+            url=data.url,
+            url_hash=url_hash,
+            nombre_medio=fuente.nombre if fuente else "Manual",
+            estado="crudo"
+        )
+        db.add(articulo)
+        db.commit()
+        db.refresh(articulo)
+        
+        # Only add task if article is still in "crudo" state
+        if articulo.estado == "crudo":
+            from app.services.scraping import extract_and_process_article
+            background_tasks.add_task(extract_and_process_article, articulo.id)
+        
+        return {"message": "Link agregado y procesamiento iniciado", "articulo_id": articulo.id}
+        
+    except Exception as e:
+        # If duplicate, just ignore
+        db.rollback()
         raise HTTPException(status_code=400, detail="Este link ya fue procesado")
-    
-    fuente = None
-    if data.fuente_id:
-        fuente = db.query(Fuente).filter(Fuente.id == data.fuente_id).first()
-    
-    articulo = Articulo(
-        fuente_id=data.fuente_id,
-        url=data.url,
-        url_hash=url_hash,
-        nombre_medio=fuente.nombre if fuente else "Manual",
-        estado="crudo"
-    )
-    db.add(articulo)
-    db.commit()
-    db.refresh(articulo)
-    
-    # Only add task if article is still in "crudo" state
-    if articulo.estado == "crudo":
-        from app.services.scraping import extract_and_process_article
-        background_tasks.add_task(extract_and_process_article, articulo.id)
-    
-    return {"message": "Link agregado y procesamiento iniciado", "articulo_id": articulo.id}
 
 
 @router.get("/articulos", response_model=list[ArticuloResponse])

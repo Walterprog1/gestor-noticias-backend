@@ -357,17 +357,9 @@ async def _async_scan(fuente_id: int):
 
         logger.info(f"Scan complete for '{fuente.nombre}': {total_new} new articles")
 
-        # Process new articles through AI
-        new_articles = db.query(Articulo).filter(
-            Articulo.fuente_id == fuente.id,
-            Articulo.estado == "crudo"
-        ).all()
-
-        for articulo in new_articles:
-            try:
-                await _process_single_article(articulo.id, db)
-            except Exception as e:
-                logger.error(f"Error processing article {articulo.id}: {e}")
+        # Don't process automatically - will be done by big-pickle later
+        # await _process_single_article(articulo.id, db)
+        logger.info(f"Article {articulo.id} extracted and ready for AI analysis")
 
     except Exception as e:
         logger.error(f"Scan error for fuente {fuente_id}: {e}")

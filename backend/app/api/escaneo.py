@@ -97,13 +97,19 @@ async def add_manual_link(
 
     # Check for duplicates
     existing = db.query(Articulo).filter(Articulo.url_hash == url_hash).first()
+    # Check if URL already exists
+    url_hash = hashlib.sha256(data.url.encode()).hexdigest()
+    existing = db.query(Articulo).filter(
+        (Articulo.url == data.url) | (Articulo.url_hash == url_hash)
+    ).first()
     if existing:
         raise HTTPException(status_code=400, detail="Este link ya fue procesado")
-
+    
     fuente = None
     if data.fuente_id:
         fuente = db.query(Fuente).filter(Fuente.id == data.fuente_id).first()
-
+    
+    # Check again for race conditions
     articulo = Articulo(
         fuente_id=data.fuente_id,
         url=data.url,

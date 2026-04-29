@@ -356,7 +356,33 @@ async def _async_scan(fuente_id: int):
         db.commit()
 
         logger.info(f"Scan complete for '{fuente.nombre}': {total_new} new articles")
-        logger.info(f"Articles left in 'crudo' state for big-pickle processing")
+        logger.info(f"Articles left in 'crudo' state - triggering big-pickle processing")
+        
+        # Automatically trigger fill_approve_queue.py processing
+        import subprocess
+        import sys
+        script_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "fill_approve_queue.py")
+        script_path = os.path.abspath(script_path)
+        
+        def run_fill_approve_queue():
+            """Run fill_approve_queue.py in background."""
+            try:
+                subprocess.Popen([
+                    sys.executable, script_path
+                ], 
+                stdout=subprocess.DEVNULL, 
+                stderr=subprocess.DEVNULL,
+                start_new_session=True
+                )
+                logger.info(f"Triggered fill_approve_queue.py for big-pickle processing")
+            except Exception as e:
+                logger.error(f"Failed to trigger fill_approve_queue.py: {e}")
+        
+        # Run in a separate thread to not block the scan
+        import threading
+        thread = threading.Thread(target=run_fill_approve_queue)
+        thread.daemon = True
+        thread.start()
         
     except Exception as e:
         logger.error(f"Scan error for fuente {fuente_id}: {e}")

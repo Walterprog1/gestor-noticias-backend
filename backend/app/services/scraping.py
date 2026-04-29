@@ -358,31 +358,45 @@ async def _async_scan(fuente_id: int):
         logger.info(f"Scan complete for '{fuente.nombre}': {total_new} new articles")
         logger.info(f"Articles left in 'crudo' state - triggering big-pickle processing")
         
-        # Automatically trigger fill_approve_queue.py processing
-        import subprocess
-        import sys
-        script_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "fill_approve_queue.py")
-        script_path = os.path.abspath(script_path)
-        
-        def run_fill_approve_queue():
-            """Run fill_approve_queue.py in background."""
+        # Automatically trigger processing in background thread
+        def run_processing():
+            """Run processing in background using existing function."""
             try:
-                subprocess.Popen([
-                    sys.executable, script_path
-                ], 
-                stdout=subprocess.DEVNULL, 
-                stderr=subprocess.DEVNULL,
-                start_new_session=True
-                )
-                logger.info(f"Triggered fill_approve_queue.py for big-pickle processing")
+                import asyncio
+                from app.services.scraping import _process_single_article
+                from app.models.articulo import Articulo
+                
+                # Create new DB session for this thread
+                db_thread = SessionLocal()
+                try:
+                    # Process all crudo articles
+                    crudo_articles = db_thread.query(Articulo).filter(
+                        (Articulo.estado == "crudo") | (Articulo.estado == "error")
+                    ).all()
+                    
+                    logger.info(f"Background processing: {len(crudo_articles)} articles to process")
+                    
+                    for art in crudo_articles:
+                        try:
+                            # Process directly with existing function
+                            asyncio.run(_process_single_article(art.id, db_thread))
+                            db_thread.refresh(art)
+                            logger.info(f"Processed article {art.id}: {art.estado}")
+                        except Exception as e:
+                            logger.error(f"Error processing article {art.id}: {e}")
+                            db_thread.rollback()
+                    
+                    logger.info("Background processing completed")
+                finally:
+                    db_thread.close()
             except Exception as e:
-                logger.error(f"Failed to trigger fill_approve_queue.py: {e}")
+                logger.error(f"Background processing failed: {e}")
         
-        # Run in a separate thread to not block the scan
         import threading
-        thread = threading.Thread(target=run_fill_approve_queue)
+        thread = threading.Thread(target=run_processing)
         thread.daemon = True
         thread.start()
+        logger.info("Background processing thread started")
         
     except Exception as e:
         logger.error(f"Scan error for fuente {fuente_id}: {e}")
